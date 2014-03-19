@@ -1,0 +1,45 @@
+GeneralOptions:
+  # -1 = game hasn't started, 0 = game is in progress, 1 = game has ended
+  gameState: -1
+  
+  # Time passed since start of the game
+  timePassed: 0
+  
+  # The time interval (in seconds) that a broadcast is sent out
+  # 1800 seconds = 30 mins, 1200 seconds = 20 mins, 600 seconds = 10 mins
+  clockSpeed: 1800
+  
+  # The playable radius in the world 
+  worldRadius: 1000
+  
+  # -1 = eternal night, 0 = normal day/night cycle, 1 = eternal day
+  eternalDay: 0
+  
+  # The name of the world file to be used
+  worldName: UHC
+  
+  # Toggle to have the plugin add in the bedrock wall or not for you
+  # Unless you already have a world file and toggle this to FALSE you will always
+  # have a bedrock wall.
+  generateBedrock: true
+  
+  # Set to true if you want chunks to be pre-generated
+  # WARNING: Reqiures a minimum amount of ram, about 2GB.
+  # WARNING: Only use if your server can handle it.
+  pregenChunks: false
+  
+  # Toggle the ability to spectate the game
+  # If set to false all players not a team will be banned upon start or death
+  spectate: true
+
+TeamOptions:
+  # The amount of teams that are playing
+  numberOfTeams: 10
+  
+  #The amount of players per team
+  teamSizes: 2
+  
+
+# This will store the names of players on each team in case of a server crash or server
+# shut down in the middle of a game
+Teams:

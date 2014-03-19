@@ -1,0 +1,53 @@
+name: UHC
+version: 0.1
+description: This plugin aids in the running of UHC events by providing automated UHC utilities. 
+author: CacklingPanda
+website: http://cpanda.me
+
+main: me.cpanda.UHC.UHC
+database: false
+prefix: UHC
+
+commands:
+  start:
+    description: Start the UHC game!
+    permission: UHC.*
+    usage: It's just /start what did you do?!
+  end:
+    description: End the UHC game manually!
+    permission: UHC.*
+    usage: It's just /end what did you do?!
+  heal:
+    description: Heal all players, just in case
+    permission: UHC.*
+    usage: /heal
+  freeze:
+    description: Freeze all players not OPed
+    permission: UHC.*
+    usage: /freeze <seconds>
+  join:
+    description: Join a UHC team! Can specify team.
+    permission: UHC.player
+    usage: Either /join or /join <team>
+  leave:
+    description: Leave a UHC team!
+    permission: UHC.player
+    usage: It's just /leave
+  teams:
+    description: Print the current teams!
+    permission: UHC.player
+    usage: It's just /teams !
+  fixbedrock:
+    description: Fix holes in the bedrock wall
+    permission: UHC.*
+    usage: /fixbedrock
+
+permissions:
+  UHC.*:
+    description: Give access to all UHC commands.
+    default: op
+    children:
+      UHC.player: true
+  UHC.player:
+    description: Give access to all player UHC commands.
+    default: true
