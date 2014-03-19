@@ -42,22 +42,22 @@ public class GameCommands implements CommandExecutor {
 			}
 			
 			if(label.equalsIgnoreCase("start") && (!isPlayer || player.isOp())) {
-				UHC.uhcWorld.fixBedrock();
-				return UHC.controller.startGameCommand();
+				UHC.getController().getUHCWorld().fixBedrock();
+				return UHC.getController().startGame();
 			} else if(label.equalsIgnoreCase("end") && (!isPlayer || player.isOp())) {
-				return UHC.controller.endGameCommand();
+				return UHC.getController().endGame();
 			} else if(label.equalsIgnoreCase("join") && isPlayer) {
 				if(args.length == 0)
-					return UHC.controller.joinTeamCommand(player);
+					return UHC.getController().joinTeam(player);
 				else
-					return UHC.controller.joinTeamCommand(args[0], player);
+					return UHC.getController().joinTeam(args[0], player);
 			} else if(label.equalsIgnoreCase("leave") && isPlayer) {
-				return UHC.controller.leaveTeamCommand(player);
+				return UHC.getController().leaveTeam(player);
 			} else if(label.equalsIgnoreCase("teams")) {
-				return UHC.controller.printTeams(sender);
+				return UHC.getController().printTeams(sender);
 			} else if(label.equalsIgnoreCase("fixbedrock")) {
 				plugin.getServer().broadcastMessage(ChatColor.DARK_RED + "Fixing bedrock... Prepare for lag!");
-				return UHC.uhcWorld.fixBedrock();
+				return UHC.getController().getUHCWorld().fixBedrock();
 			}
 		return false;
 	}

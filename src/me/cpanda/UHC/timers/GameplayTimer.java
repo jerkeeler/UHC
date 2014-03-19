@@ -17,24 +17,26 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class GameplayTimer extends BukkitRunnable {
 	//private final UHC PLUGIN;
 	private final Server SERVER;
+	private final int clockSpeed;
 	
 	/**
 	 * Default constructor
 	 * 
 	 * @param plugin The plugin, in case needed
 	 */
-	public GameplayTimer(UHC plugin) {
+	public GameplayTimer(UHC plugin, int clockSpeed) {
 		//this.PLUGIN = plugin;
 		this.SERVER = plugin.getServer();
+		this.clockSpeed = clockSpeed;
 	}
 
 	@Override
 	public void run() {
-		if(UHC.gameState.equals(GameState.ACTIVE)) {
-			UHC.timePassed += 1;
-			if(UHC.timePassed % UHC.clockSpeed == 0) {
-				SERVER.broadcastMessage(ChatColor.DARK_GREEN + Integer.toString(UHC.timePassed/60) + ChatColor.DARK_PURPLE + " minutes have passed!");
-				// TODO: Display scoreboard and play sound
+		if(UHC.getController().getGameState().equals(GameState.ACTIVE)) {
+			UHC.getController().addTimePassed(1);
+			if(UHC.getController().getTimePassed() % clockSpeed == 0) {
+				SERVER.broadcastMessage(ChatColor.DARK_GREEN + Integer.toString(UHC.getController().getTimePassed()) + ChatColor.DARK_PURPLE + " minutes have passed!");
+				// TODO: Display scoreboard
 				for(Player p : SERVER.getOnlinePlayers()) {
 					p.playSound(p.getLocation(), Sound.WITHER_DEATH, 1, 1);
 				}

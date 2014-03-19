@@ -15,7 +15,7 @@ import org.bukkit.WorldCreator;
  *
  */
 public class UHCWorld {
-	private int radius;
+	private int radius, eternalDay;
 	private String worldName;
 	private World regWorld;
 	
@@ -25,10 +25,11 @@ public class UHCWorld {
 	 * @param radius The playable radius for the world
 	 * @param regWorld The world file that is being played in
 	 */
-	public UHCWorld(int radius, String worldName, World regWorld) {
+	public UHCWorld(int radius, String worldName, World regWorld, int eternalDay) {
 		this.radius = radius;
 		this.worldName = worldName;
 		this.regWorld = regWorld;
+		this.eternalDay = eternalDay;
 	}
 
 	/**
@@ -48,8 +49,15 @@ public class UHCWorld {
 	public void setUHCRules() {
 		regWorld.setDifficulty(Difficulty.HARD);
 		regWorld.setPVP(true);
-		regWorld.setGameRuleValue("doDaylightCycle", "true"); // TODO: Check if eternal day or night
 		regWorld.setGameRuleValue("naturalRegeneration", "false");
+		
+		// Eternal day or night?
+		if(eternalDay == 0)
+			regWorld.setGameRuleValue("doDaylightCycle", "true");
+		else if(eternalDay == 1)
+			regWorld.setTime(0);
+		else
+			regWorld.setTime(1000*10);
 	}
 	
 	/**
@@ -80,31 +88,6 @@ public class UHCWorld {
 	}
 	
 	/**
-	 * Static method to create a new UHCWorld if one doesn't exist
-	 * 
-	 * @param worldName The name of the world
-	 * @param radius The playable radius of the world
-	 * @param server The server object to create the world
-	 * @return UHCWorld The new UHCWorld object
-	 */
-	public static UHCWorld createWorld(String worldName, int radius, Server server, boolean generateBedrock) {
-		UHCWorld newWorld = new UHCWorld(radius, worldName, server.createWorld(new WorldCreator(worldName)));
-		
-		// Set the parameters to meet the UHC requirements for Pre-game
-		newWorld.setPreUHCRules();
-		
-		//server.getLogger().info("[UHC] LOADING CHUNKS PREPARE FOR LAG");
-		//newWorld.loadChunks();
-		
-		if(generateBedrock) {
-			server.getLogger().info("[UHC] GENERATING BEDROCK PREPARE FOR LAG");
-			newWorld.generateBedrock();
-		}
-		
-		return newWorld;
-	}
-	
-	/**
 	 * Static method to load an already existing UHCWorld
 	 * 
 	 * @param worldName The name of the world.
@@ -112,17 +95,26 @@ public class UHCWorld {
 	 * @param server The server object to load the world
 	 * @return UHCWorld The loaded UCHWorld object
 	 */
-	public static UHCWorld loadWorld(String worldName, int radius, Server server, boolean addBedrock) {
-		UHCWorld loadedWorld = new UHCWorld(radius, worldName, server.getWorld(worldName)); // temp, TODO: remove = null when addBedrock is finished
+	public static UHCWorld loadWorld(String worldName, int radius, boolean generateBedrock, boolean pregenChunks, int eternalDay, Server server) {
+		// Check to see if world is created or not
+		World regWorld = null;
+		if(server.getWorld(worldName) != null)
+			regWorld = server.getWorld(worldName);
+		else 
+			regWorld = server.createWorld(new WorldCreator(worldName));
 		
-		server.getLogger().info("[UHC] LOADING CHUNKS PREPARE FOR LAG");
-		loadedWorld.loadChunks();
+		UHCWorld loadedWorld = new UHCWorld(radius, worldName, regWorld, eternalDay);
 		
-		if(addBedrock) {
+		// Do you want to pregenChunks?
+		if(pregenChunks) {
+			server.getLogger().info("[UHC] LOADING CHUNKS PREPARE FOR LAG");
+			loadedWorld.loadChunks();
+		}
+		
+		// Do you want to add bedrock?
+		if(generateBedrock) {
 			server.getLogger().info("[UHC] GENERATING BEDROCK PREPARE FOR LAG");
 			loadedWorld.generateBedrock();
-		} else {
-			loadedWorld = new UHCWorld(radius, worldName, server.getWorld(worldName));
 		}
 		
 		return loadedWorld;
@@ -216,6 +208,11 @@ public class UHCWorld {
 		}
 	}
 	
+	/** 
+	 * Method to call to run the generateBedrock() method on command
+	 * 
+	 * @return true
+	 */
 	public boolean fixBedrock() {
 		generateBedrock();
 		return true;

@@ -5,9 +5,8 @@ GeneralOptions:
   # Time passed since start of the game
   timePassed: 0
   
-  # The time interval (in seconds) that a broadcast is sent out
-  # 1800 seconds = 30 mins, 1200 seconds = 20 mins, 600 seconds = 10 mins
-  clockSpeed: 1800
+  # The time interval (in minutes) that a broadcast is sent out
+  clockSpeed: 30
   
   # The playable radius in the world 
   worldRadius: 1000

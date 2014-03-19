@@ -3,7 +3,7 @@ package me.cpanda.UHC.theGame;
 import me.cpanda.UHC.UHC;
 import me.cpanda.UHC.enums.GameState;
 import me.cpanda.UHC.timers.CountdownTimer;
-import me.cpanda.UHC.timers.GameplayTimer;
+import me.cpanda.UHCWorldGen.UHCWorld;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,13 +18,32 @@ import org.bukkit.entity.Player;
  *
  */
 public class GameControl {	
-	private UHC plugin;
-	private TeamController teamControl;
-	private int timerID;
+	private String notOnTeamMessage = "You are " + ChatColor.DARK_RED + "not " + ChatColor.RESET + "on a team!";
 	
-	public GameControl(UHC plugin, TeamController teamController) {
+	private UHC plugin;
+	private GameState gameState;
+	private TeamController teamControl;
+	private UHCWorld uhcWorld;
+	private int timerID, timePassed, clockSpeed;;	
+	private boolean spectate;
+	
+	/**
+	 * Constructor 
+	 * 
+	 * @param plugin The plugin, to get the server and such
+	 * @param teamController The thing that controls the teams!
+	 */
+	public GameControl(UHC plugin, TeamController teamController, UHCWorld uhcWorld, int timePassed, int clockSpeed, boolean spectate,
+			GameState gameState) {
 		this.plugin = plugin;
 		this.teamControl = teamController;
+		this.uhcWorld = uhcWorld;
+		this.timePassed = timePassed;
+		this.clockSpeed = clockSpeed;
+		this.spectate = spectate;
+		this.gameState = gameState;
+		
+		// Initialize timerID
 		timerID = 0;
 	}
 	
@@ -33,12 +52,13 @@ public class GameControl {
 	 * 
 	 * @return boolean true if game started, false otherwise TODO: move to another class?
 	 */
-	public boolean startGameCommand() {
+	public boolean startGame() {
 		// If pre-game
-		if(UHC.gameState.equals(GameState.STARTING)) {			
+		if(gameState.equals(GameState.STARTING)) {			
 			// Insert countdown
-			new CountdownTimer(20, plugin, "Match is starting in #{COUNTDOWN} seconds!");
-			timerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new GameplayTimer(plugin), 0, 20);
+			new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
+			
+			// TODO: Write teams to config
 			return true;
 		}
 		
@@ -50,24 +70,23 @@ public class GameControl {
 	 * 
 	 * @return boolean true if game ended, false otherwise 
 	 */
-	public boolean endGameCommand() {
+	public boolean endGame() {
 		// If pre-game
-		if(UHC.gameState.equals(GameState.ACTIVE)) {
+		if(gameState.equals(GameState.ACTIVE)) {
 			// Set gamemodes
 			for(Player player : plugin.getServer().getOnlinePlayers()) {
 				player.setGameMode(GameMode.CREATIVE);
 			}
 			
-			// Create new world
-			// Teleport
-			
-			// Add broadcast
+			// Cancel game timer
 			Bukkit.getScheduler().cancelTask(timerID);
+			
 			// Deny block placement/breakage while in creative TODO: Actually, maybe not? Config option?
 			plugin.getServer().broadcastMessage(ChatColor.DARK_GREEN + "GAME HAS " 
 					+ ChatColor.DARK_RED + "ENDED" + ChatColor.DARK_GREEN + "!");
 			
-			UHC.gameState = GameState.STARTING; // TODO: Change to ENDING WHEN DONE
+			// Set gamestate to ending
+			gameState = GameState.ENDING;
 			return true;
 		}
 		
@@ -79,8 +98,8 @@ public class GameControl {
 	 * 
 	 * @return boolean true if added to a team
 	 */
-	public boolean joinTeamCommand(Player player) {
-		return joinTeamCommand("RANDOM", player);
+	public boolean joinTeam(Player player) {
+		return joinTeam("RANDOM", player);
 	}
 
 	/**
@@ -88,8 +107,12 @@ public class GameControl {
 	 * 
 	 * @return boolean true if added to a team
 	 */
-	public boolean joinTeamCommand(String teamPref, Player player) {
-		if(teamPref.equalsIgnoreCase("RANDOM")) {
+	public boolean joinTeam(String teamPref, Player player) {
+		// Make sure it's actually possible to join a team first!
+		if(gameState.equals(GameState.ACTIVE)) {
+			player.sendMessage("The game is " + ChatColor.DARK_RED + "in progress" + ChatColor.RESET + "!");
+			return true;
+		} else if(teamPref.equalsIgnoreCase("RANDOM")) {
 			return teamControl.joinRandomTeam(player);
 		} else {
 			return teamControl.joinTeam(teamPref, player);
@@ -102,8 +125,16 @@ public class GameControl {
 	 * @param player The player to remove
 	 * @return boolean true if removed from team
 	 */
-	public boolean leaveTeamCommand(Player player) {
-		return teamControl.leaveTeam(player);
+	public boolean leaveTeam(Player player) {
+		if(!teamControl.onTeam(player))
+			player.sendMessage(notOnTeamMessage);
+		// Can't leave a team if game is active!
+		else if(gameState.equals(GameState.ACTIVE)) {
+			player.sendMessage("The game is " + ChatColor.DARK_RED + "in progress" + ChatColor.RESET + "!");
+		} else 
+			return teamControl.leaveTeam(player);
+		
+		return true;
 	}
 	
 	/**
@@ -133,6 +164,9 @@ public class GameControl {
 		teamControl.freeze(seconds);
 	}
 	
+	/**
+	 * Teleport teams to random location
+	 */
 	public void teleportTeams() {
 		teamControl.teleportTeams();
 	}
@@ -144,5 +178,68 @@ public class GameControl {
 	 */
 	public void setTimerID(int id) {
 		timerID = id;
+	}
+	
+	/**
+	 * Get the uhcWorld object
+	 * 
+	 * @return UHCWorld current world
+	 */
+	public UHCWorld getUHCWorld() {
+		return uhcWorld;
+	}
+	
+	/**
+	 * Get the game state
+	 * 
+	 * @return GameState the game state!
+	 */
+	public GameState getGameState() {
+		return gameState;
+	}
+	
+	/**
+	 * Set the gameState
+	 * 
+	 * @param gameState The game state
+	 */
+	public void setGameState(GameState gameState) {
+		this.gameState = gameState;
+	}
+	
+	/**
+	 * Return spectate value
+	 * 
+	 * @return true if you can spectate, false otherwise
+	 */
+	public boolean canSpectate(){
+		return spectate;
+	}
+
+	/**
+	 * Get game length so far
+	 * 
+	 * @return int time passed
+	 */
+	public int getTimePassed() {
+		return timePassed;
+	}
+	
+	/**
+	 * Add time to the timePassed
+	 * 
+	 * @param elapsedTime The amount of time passed to be added
+	 */
+	public void addTimePassed(int elapsedTime) {
+		timePassed += elapsedTime;
+	}
+	
+	/**
+	 * Return the clock speed
+	 * 
+	 * @return int the cockspeed
+	 */
+	public int getClockSpeed() {
+		return clockSpeed;
 	}
 }

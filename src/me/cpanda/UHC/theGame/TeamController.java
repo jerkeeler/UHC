@@ -3,7 +3,6 @@ package me.cpanda.UHC.theGame;
 import java.util.*;
 
 import me.cpanda.UHC.UHC;
-import me.cpanda.UHC.enums.GameState;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -27,7 +26,6 @@ public class TeamController {
 	private String doesNotExistMessage = "That team " + ChatColor.DARK_RED + "does not exist" + ChatColor.RESET + "!";
 	private String teamFullMessage = "That team is already " + ChatColor.DARK_RED + "full" + ChatColor.RESET + "!";
 	private String alreadyOnTeamMessage = "You are already " + ChatColor.DARK_RED + "on " + ChatColor.RESET + "a team!";
-	private String notOnTeamMessage = "You are " + ChatColor.DARK_RED + "not " + ChatColor.RESET + "on a team!";
 	
 	private int teamSizes, totalNumTeams;
 	private UHC plugin;
@@ -70,9 +68,13 @@ public class TeamController {
 	 */
 	private void createTeams() {
 		
+		// Only add one team if team sizes of 1
 		if(teamSizes == 1) {
 			mainScoreboard.registerNewTeam(defaultName);
-		} else {
+		} 
+		
+		// Create teams, add colors, add to scoreboard
+		else {
 			for(int i = 0; i < totalNumTeams; i++) {
 				String teamName = teamColors[i].name();
 				if(mainScoreboard.getTeam(teamName) ==  null) {
@@ -82,6 +84,7 @@ public class TeamController {
 			}
 		}
 		
+		// Just to make sure, reset all scores for players and the scoreboard
 		Iterator<OfflinePlayer> playerIt = mainScoreboard.getPlayers().iterator();
 		while(playerIt.hasNext()) {
 			mainScoreboard.resetScores(playerIt.next());
@@ -116,17 +119,14 @@ public class TeamController {
 	 * @return boolean true if they joined a team
 	 */
 	public boolean joinTeam(String teamPref, Player player) {
-		if(UHC.gameState.equals(GameState.ACTIVE)) {
-			player.sendMessage("The game is " + ChatColor.DARK_RED + "in progress" + ChatColor.RESET + "!");
-			return true;
-		}
-		
+		// Add player to "Default" team if free-for-all
 		if(teamSizes == 1) {
 			mainScoreboard.getTeam(defaultName).addPlayer(player);
 			player.sendMessage("You have " + ChatColor.DARK_GREEN + "joined " + ChatColor.RESET + "the game!");
 			return true;
 		}
 		
+		// Get team pref and see if they can join it or not
 		teamPref = teamPref.toUpperCase();
 		if(mainScoreboard.getTeam(teamPref) == null)
 			player.sendMessage(doesNotExistMessage);
@@ -150,19 +150,14 @@ public class TeamController {
 	 * @return true
 	 */
 	public boolean leaveTeam(Player player) {
-		if(UHC.gameState.equals(GameState.ACTIVE)) {
-			player.sendMessage("The game is " + ChatColor.DARK_RED + "in progress" + ChatColor.RESET + "!");
-			return true;
-		}
-		
+		// Leave default team if free-for-all
 		if(teamSizes == 1) {
 			mainScoreboard.getTeam(defaultName).removePlayer(player);
 			player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the game!");
 			return true;
 		}
 		
-		if(!onTeam(player))
-			player.sendMessage(notOnTeamMessage);
+		// 
 		else {
 			for(Team team : mainScoreboard.getTeams()) {
 				if(team.hasPlayer(player)) {
@@ -182,7 +177,7 @@ public class TeamController {
 	 * @param player The player to see if they are on a team
 	 * @return boolean True if on team, false if not
 	 */
-	private boolean onTeam(Player player) {
+	public boolean onTeam(Player player) {
 		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
 		while(teamIt.hasNext()) {
 			Team team = teamIt.next();
@@ -229,8 +224,8 @@ public class TeamController {
 	 * Teleport all teams out to a random location
 	 */
 	public void teleportTeams() {
-		World world = UHC.uhcWorld.getWorld();
-		int radius = UHC.uhcWorld.getRadius();
+		World world = UHC.getController().getUHCWorld().getWorld();
+		int radius = UHC.getController().getUHCWorld().getRadius();
 		int minDistance = radius/5;
 		boolean respectTeams = true;
 		if(teamSizes == 1) {
@@ -250,6 +245,7 @@ public class TeamController {
 			}
 		}
 		
+		// Issue command
 		System.out.println(command);
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
 		

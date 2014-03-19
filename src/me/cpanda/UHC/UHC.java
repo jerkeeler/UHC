@@ -20,11 +20,8 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /* Overall ToDos:
- * TODO: Pre-gen world and bedrock wall
  * TODO: Spawn area
  * TODO: Spectator mode
- * TODO: Freeze players
- * TODO: Timer!!!!
  */
 
 /**
@@ -45,15 +42,16 @@ public class UHC extends JavaPlugin {
 	 * 
 	 * timePassed - the current amount of IRL time that has passed since the start of the
 	 * game, the clock
-	 */
+	 *
 	public static GameState gameState;
-	public static int timePassed, eternalDay, teamSizes, clockSpeed;
+	public static int timePassed, clockSpeed;
 	
 	public static boolean spectate;
 	
 	public static UHCWorld uhcWorld;
-	public static GameControl controller;
-	public static UHC plugin;
+	public static UHC plugin;*/
+	
+	private static GameControl controller;
 	
 	
 	/**
@@ -64,7 +62,6 @@ public class UHC extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		Server server = this.getServer();
-		UHC.plugin = this;
 		
 		// Show console that we are loading the UHC plugin
 		server.getLogger().info("--- LOADING CiCi's UHC PLUGIN ---");
@@ -104,33 +101,31 @@ public class UHC extends JavaPlugin {
 		
 		// Get main variables from the config file
 		FileConfiguration config = this.getConfig();
-		gameState = GameState.intToGameState(config.getInt("GeneralOptions.gameState"));
-		if(gameState.equals(GameState.ENDING)) gameState = GameState.STARTING;
-		
-		timePassed = config.getInt("GeneralOptions.timePassed");
-		eternalDay = config.getInt("GeneralOptions.eternalDay");
-		spectate = config.getBoolean("GeneralOptions.spectate");
-		clockSpeed = config.getInt("GeneralOptions.clockSpeed");
 		
 		// Get the world variables from the config file
 		String worldName = config.getString("GeneralOptions.worldName");
 		int worldRadius = config.getInt("GeneralOptions.worldRadius");
+		int eternalDay = config.getInt("GeneralOptions.eternalDay");
 		boolean generateBedrock = config.getBoolean("GeneralOptions.generateBedrock");
+		boolean pregenChunks = config.getBoolean("GeneralOptions.pregenChunks");
 		
-		// Get the world with worldName and if none exists create it and generate it
-		if(server.getWorld(worldName) == null) {
-			uhcWorld = UHCWorld.createWorld(worldName, worldRadius, server, generateBedrock);
-		} else {
-			uhcWorld = UHCWorld.loadWorld(worldName, worldRadius, server, generateBedrock);
-		}
+		// The the world into a uhcWorld
+		UHCWorld uhcWorld = UHCWorld.loadWorld(worldName, worldRadius,generateBedrock, pregenChunks, eternalDay, server);
 		
 		// Initiate GameControl and TeamControl class
 		int numTeams = config.getInt("TeamOptions.numberOfTeams");
-		teamSizes= config.getInt("TeamOptions.teamSizes");
+		int teamSizes= config.getInt("TeamOptions.teamSizes");
 
 		TeamController teamController = new TeamController(this, teamSizes, numTeams);
 		
-		controller = new GameControl(this, teamController);
+		GameState gameState = GameState.intToGameState(config.getInt("GeneralOptions.gameState"));
+		if(gameState.equals(GameState.ENDING)) gameState = GameState.STARTING;
+		
+		int timePassed = config.getInt("GeneralOptions.timePassed");
+		int clockSpeed = config.getInt("GeneralOptions.clockSpeed");
+		boolean spectate = config.getBoolean("GeneralOptions.spectate");
+		
+		controller = new GameControl(this, teamController, uhcWorld, timePassed, clockSpeed, spectate, gameState);
 		
 		// Register all events
 		PlayerConnectionListener connectionListener = new PlayerConnectionListener(this);
@@ -150,5 +145,13 @@ public class UHC extends JavaPlugin {
 		this.getCommand("leave").setExecutor(gameCmdListener);
 		this.getCommand("teams").setExecutor(gameCmdListener);
 		this.getCommand("fixbedrock").setExecutor(gameCmdListener);
+	}
+	
+	/**
+	 * Get the game controller!
+	 * @return
+	 */
+	public static GameControl getController() {
+		return controller;
 	}
 }

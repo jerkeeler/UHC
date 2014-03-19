@@ -38,18 +38,19 @@ public class PlayerConnectionListener implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		Player joiningPlayer = event.getPlayer();
 		// TODO: Add player to the spectators team if game is in progress
+		// TODO: Check to see if dead
 		
 		// Check to see if the player is in the correct world, if not, teleport them
-		joiningPlayer.getLocation().setWorld(UHC.uhcWorld.getWorld());
-		joiningPlayer.teleport(UHC.uhcWorld.getWorld().getSpawnLocation());
-		joiningPlayer.setBedSpawnLocation(UHC.uhcWorld.getWorld().getSpawnLocation());
+		joiningPlayer.getLocation().setWorld(UHC.getController().getUHCWorld().getWorld());
+		joiningPlayer.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
+		joiningPlayer.setBedSpawnLocation(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
 		
 		// Set gamemode to adventure unless the player is OP or game is active
-		if(!joiningPlayer.isOp() && !UHC.gameState.equals(GameState.ACTIVE)) {
+		if(!joiningPlayer.isOp() && !UHC.getController().getGameState().equals(GameState.ACTIVE)) {
 			joiningPlayer.setGameMode(GameMode.ADVENTURE);
 		}
 		
-		UHC.controller.setScoreboard(joiningPlayer);
+		UHC.getController().setScoreboard(joiningPlayer);
 	}
 	
 

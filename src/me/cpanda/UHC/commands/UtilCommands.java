@@ -27,6 +27,9 @@ public class UtilCommands implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
+	/**
+	 * Control all commands that aren't related to actual gameplay or the game state
+	 */
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label,
 			String[] args) {
@@ -38,7 +41,7 @@ public class UtilCommands implements CommandExecutor {
 		if(label.equalsIgnoreCase("heal") && (player.isOp() || player == null)) {
 			Utils.healPlayers(plugin);
 		} else if(label.equalsIgnoreCase("freeze") && args.length == 1 && (player.isOp() || player == null)) {
-			UHC.controller.freezeTeams(Integer.parseInt(args[0]));
+			UHC.getController().freezeTeams(Integer.parseInt(args[0]));
 			return true;
 		}
 		

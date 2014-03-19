@@ -28,9 +28,10 @@ public class PlayerDeathListener implements Listener {
 		// Broadcast message
 		// Remove from team
 		// Ban player or add to spectators
-		if(UHC.spectate) {
+		if(UHC.getController().canSpectate()) {
 			// TODO: Add spectator
 		} else if (!deadPlayer.isOp()){
+			// TODO: Add player to dead list and ban
 		}
 		// Announce members left on team
 	}

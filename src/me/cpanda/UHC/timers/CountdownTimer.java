@@ -60,11 +60,13 @@ public class CountdownTimer {
 		public void run() {
 			if(timeLeft == 10) {
 				// Teleport
-				UHC.controller.teleportTeams();
-				UHC.controller.freezeTeams(10);		
+				UHC.getController().teleportTeams();
+				UHC.getController().freezeTeams(15);		
 			}
 			
 			if(first) {
+				plugin.getServer().broadcastMessage(ChatColor.RED + "Fixing bedrock...");
+				UHC.getController().getUHCWorld().fixBedrock();
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.AQUA + Integer.toString(timeLeft) + ChatColor.RESET);
 				plugin.getServer().broadcastMessage(toPrint);	
 				first = false;
@@ -79,16 +81,17 @@ public class CountdownTimer {
 				Utils.healPlayers(plugin);			
 				
 				// Butcher
-				Utils.killHostileMobs(UHC.uhcWorld.getWorld());
+				Utils.killHostileMobs(UHC.getController().getUHCWorld().getWorld());
 				
 				// Stuff to start the game
 				// Set world stuff to correct values
-				UHC.uhcWorld.setUHCRules();
+				UHC.getController().getUHCWorld().setUHCRules();
 				plugin.getServer().broadcastMessage(ChatColor.DARK_GREEN + "GAME IS STARTING " 
 						+ ChatColor.DARK_RED + "NOW" + ChatColor.DARK_GREEN + "!");
 				
-				UHC.controller.setTimerID(Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new GameplayTimer(plugin), 0, 20));
-				UHC.gameState = GameState.ACTIVE;
+				UHC.getController().setTimerID(Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, 
+						new GameplayTimer(plugin, UHC.getController().getClockSpeed()), 0, 20*1));
+				UHC.getController().setGameState(GameState.ACTIVE);
 
 				Bukkit.getScheduler().cancelTask(timerID);
 			}
