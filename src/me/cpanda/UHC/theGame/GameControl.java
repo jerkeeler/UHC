@@ -230,7 +230,10 @@ public class GameControl {
 	public boolean randomizeTeams() {
 		if(gameState.equals(GameState.ACTIVE))
 			return false;
-		return false;
+		
+		plugin.getServer().broadcastMessage(ChatColor.GOLD + "Randomizing teams!");
+		teamControl.shuffle();
+		return true;
 	}
 	
 	/**

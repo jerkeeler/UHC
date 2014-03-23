@@ -225,6 +225,17 @@ public class TeamController {
 	}
 	
 	/**
+	 * Shuffle all online players to random teams
+	 */
+	public void shuffle() {
+		cleanseTeams();
+		
+		for(Player p : plugin.getServer().getOnlinePlayers()) {
+			joinRandomTeam(p);
+		}
+	}
+	
+	/**
 	 * See if a player is on a team or not
 	 * 
 	 * @param player The player to see if they are on a team
