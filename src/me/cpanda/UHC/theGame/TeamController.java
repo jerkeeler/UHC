@@ -3,7 +3,6 @@ package me.cpanda.UHC.theGame;
 import java.util.*;
 
 import me.cpanda.UHC.UHC;
-import me.cpanda.UHC.enums.GameState;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -48,6 +47,9 @@ public class TeamController {
 		this.plugin = plugin;
 		scbManager = plugin.getServer().getScoreboardManager();
 		mainScoreboard = scbManager.getNewScoreboard();
+		
+		if(numTeams > 10) 
+			numTeams = 10;
 		
 		this.teamSizes = teamSizes;
 		this.totalNumTeams = numTeams;
@@ -117,15 +119,16 @@ public class TeamController {
 			return joinTeam("Default", player);
 
 		String teamPref = obsName;
+		
 		// Make sure that the player doesn't join the observers team
-		while(teamPref.equalsIgnoreCase(obsName)) {
-			Random rnd = new Random();
-			int choice = rnd.nextInt(totalNumTeams) + 1;
-			Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
-			
-			for(int i = 0; i <= choice; i++) {
-				teamPref = teamIt.next().getName();
-			}
+		Random rnd = new Random();
+		int choice = rnd.nextInt(totalNumTeams);
+		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
+		
+		for(int i = 0; i <= choice; i++) {
+			teamPref = teamIt.next().getName();
+			if(teamPref.equals(obsName))
+				i--;
 		}
 		
 		return joinTeam(teamPref, player);
