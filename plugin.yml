@@ -9,6 +9,10 @@ database: false
 prefix: UHC
 
 commands:
+  restart:
+    description: Teleport everyone back to spawn add everyone to observers and start over
+    permission: UHC.*
+    usage: /restart
   fixbedrock:
     description: Fix holes in the bedrock wall
     permission: UHC.*
@@ -29,6 +33,10 @@ commands:
     description: Freeze all players not OPed
     permission: UHC.*
     usage: /freeze <seconds>
+  cancel:
+    description: cancel the current countdown
+    permission: UHC.*
+    usage: /cancel 
   join:
     description: Join a UHC team! Can specify team.
     permission: UHC.player
@@ -45,10 +53,6 @@ commands:
     description: Send a message to every player
     permission: UHC.player
     usage: /g <message>
-  restart:
-    description: Teleport everyone back to spawn add everyone to observers and start over
-    permission: UHC.*
-    usage: /restart
 
 permissions:
   UHC.*:

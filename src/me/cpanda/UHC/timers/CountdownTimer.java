@@ -78,6 +78,8 @@ public class CountdownTimer {
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.AQUA + Integer.toString(timeLeft) + ChatColor.RESET);
 				plugin.getServer().broadcastMessage(toPrint);
 			} else if (timeLeft <= 0){		
+				UHC.getController().clearCountdownTimer();
+				
 				// Clear inventories
 				Utils.clearInventories(plugin);
 				
@@ -90,6 +92,7 @@ public class CountdownTimer {
 				// Stuff to start the game
 				// Set world stuff to correct values
 				UHC.getController().getUHCWorld().setUHCRules();
+				UHC.getController().getUHCWorld().getWorld().setSpawnLocation(0, 150, 0);
 				plugin.getServer().broadcastMessage(ChatColor.AQUA + "GAME IS STARTING " 
 						+ ChatColor.DARK_RED + "NOW" + ChatColor.AQUA + "!");
 				
@@ -101,5 +104,16 @@ public class CountdownTimer {
 			
 			timeLeft--;
 		}
+	}
+	
+	/**
+	 * Cancel the current countdown!
+	 * @return
+	 */
+	public boolean cancelCountdown() {
+		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The countdown has been " + ChatColor.DARK_RED + "cancelled" +
+				ChatColor.AQUA + "!");
+		Bukkit.getScheduler().cancelTask(timerID);
+		return true;
 	}
 }

@@ -32,6 +32,7 @@ public class GameControl {
 	private int timerID, timePassed, clockSpeed;;	
 	private boolean spectate;
 	private ArrayList<Player> dead;
+	private CountdownTimer countdown;
 	
 	/**
 	 * Constructor 
@@ -48,6 +49,7 @@ public class GameControl {
 		this.clockSpeed = clockSpeed;
 		this.spectate = spectate;
 		this.gameState = gameState;
+		countdown = null;
 		
 		// Initialize timerID
 		timerID = 0;
@@ -64,7 +66,7 @@ public class GameControl {
 			// TODO: Write teams to config file
 			FileConfiguration config = plugin.getConfig();
 			// Insert countdown
-			new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
+			countdown = new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
 			config.set("GeneralOptions.gameState", 0);
 			plugin.saveConfig();
 	
@@ -80,6 +82,9 @@ public class GameControl {
 	 * @return boolean true if game ended, false otherwise 
 	 */
 	public boolean endGame() {
+		if(countdown != null)
+			countdown.cancelCountdown();
+		
 		// If pre-game
 		if(gameState.equals(GameState.ACTIVE)) {
 			// Set gamemodes
@@ -369,6 +374,40 @@ public class GameControl {
 		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The game has been " + ChatColor.DARK_GREEN + "RESTARTED" + 
 				ChatColor.AQUA + "!");
 		
+		timePassed = 0;
+		
 		return true;
+	}
+	
+	/**
+	 * Cancel the current countdown
+	 * 
+	 * @return true if cancelled, false otherwise
+	 */
+	public boolean cancelCountdown(CommandSender sender) {
+		if(countdown != null) {
+			gameState = GameState.STARTING;
+			countdown.cancelCountdown();
+			Utils.clearInventories(plugin);
+			Utils.healPlayers(plugin);
+			
+			for(Player p : plugin.getServer().getOnlinePlayers()) {
+				p.teleport(uhcWorld.getWorld().getSpawnLocation());
+			}
+			
+			uhcWorld.setPreUHCRules();
+			clearCountdownTimer();
+			return true;
+		} else {
+			sender.sendMessage("There is no countdown running!");
+			return false;
+		}
+	}
+	
+	/**
+	 * Set the countdown timer to null!
+	 */
+	public void clearCountdownTimer() {
+		countdown = null;
 	}
 }

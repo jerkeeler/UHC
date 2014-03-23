@@ -62,6 +62,8 @@ public class GameCommands implements CommandExecutor {
 				return UHC.getController().talkGlobal(player, args);
 			} else if(label.equalsIgnoreCase("restart")) {
 				return UHC.getController().restartGame();
+			} else if(label.equalsIgnoreCase("cancel")) {
+				return UHC.getController().cancelCountdown(sender);
 			}
 		return false;
 	}

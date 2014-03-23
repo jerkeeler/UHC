@@ -137,6 +137,7 @@ public class UHC extends JavaPlugin {
 		this.getCommand("fixbedrock").setExecutor(gameCmdListener);
 		this.getCommand("g").setExecutor(gameCmdListener);
 		this.getCommand("restart").setExecutor(gameCmdListener);
+		this.getCommand("cancel").setExecutor(gameCmdListener);
 	}
 	
 	/**
