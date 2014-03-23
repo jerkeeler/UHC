@@ -81,6 +81,9 @@ public class PlayerDeathListener implements Listener {
 				if(numTeamsLeft == 1) {
 					plugin.getServer().broadcastMessage(winner.getPrefix() + winner.getName() + "" + ChatColor.AQUA + 
 							" team has " + ChatColor.DARK_GREEN + "WON" + ChatColor.AQUA + "!");
+					for(Player p : plugin.getServer().getOnlinePlayers()) {
+						p.playSound(p.getLocation(), Sound.ENDERDRAGON_DEATH, 1, 1);
+					}
 					UHC.getController().endGame();
 				}
 			}
