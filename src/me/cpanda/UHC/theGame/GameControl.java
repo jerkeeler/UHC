@@ -113,7 +113,7 @@ public class GameControl {
 		return false;
 	}
 	
-	/** d
+	/** 
 	 * Restart the game! In case something bad happens
 	 * 
 	 * @return boolean true if game is restarted, false otherwise

@@ -252,9 +252,10 @@ public class UHCWorld {
 		else 
 			regWorld = server.createWorld(new WorldCreator(worldName));
 		
-		regWorld.setSpawnLocation(0, 100, 0);
+		regWorld.setSpawnLocation(0, 247, 0);
 		World netherWorld = generateNetherWorld(worldName, server);
 		World endWorld = generateEndWorld(worldName, server);
+		generateSpawnPlatform(regWorld, server);
 		
 		UHCWorld loadedWorld = new UHCWorld(radius, worldName, eternalDay, regWorld, netherWorld, endWorld);
 		
@@ -285,7 +286,7 @@ public class UHCWorld {
 	 * @param server The server
 	 * @return World the nether world to be returned
 	 */
-	public static World generateNetherWorld(String worldName, Server server) {
+	private static World generateNetherWorld(String worldName, Server server) {
 		World netherWorld = null;
 		
 		// Create the nether world
@@ -307,7 +308,7 @@ public class UHCWorld {
 	 * @param server The server
 	 * @return World the nether world to be returned
 	 */
-	public static World generateEndWorld(String worldName, Server server) {
+	private static World generateEndWorld(String worldName, Server server) {
 		World endWorld = null;
 		
 		// Create the nether world
@@ -320,5 +321,35 @@ public class UHCWorld {
 		}
 		
 		return endWorld;
+	}
+	
+	/**
+	 * Generate the spawn platform
+	 * @param world
+	 * @param server
+	 */
+	private static void generateSpawnPlatform(World world, Server server) {		
+		world.getBlockAt(0, 245, 0).setType(Material.GOLD_BLOCK);	
+		
+		int bottomY = 245;
+		int topY = 250;
+		
+		int swZ = 9;
+		int swX = -9;
+		
+		int nwZ = -9;
+		int nwX = -9;
+		
+		int neZ = -9;
+		int neX = 9;
+		
+		int seZ = 9;
+		int seX = 9;
+		
+		for(int x = swX + 2; x < neX -2; x++ ) {
+			for(int z = nwZ + 2; z < seZ -2; z++) {
+				world.getBlockAt(x, bottomY, z).setType(Material.QUARTZ_BLOCK);
+			}
+		}
 	}
 }
