@@ -329,6 +329,8 @@ public class TeamController {
 		freezeEffects.add(new PotionEffect(PotionEffectType.HEAL, 20*seconds, 100));
 		
 		for(Team team : mainScoreboard.getTeams()) {
+			if(team.getName().equals(obsName))
+				continue;
 			for(OfflinePlayer player : team.getPlayers()) {
 				if(player instanceof Player) {
 					((Player) player).addPotionEffects(freezeEffects);
