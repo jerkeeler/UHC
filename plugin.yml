@@ -9,6 +9,10 @@ database: false
 prefix: UHC
 
 commands:
+  teamf:
+    description: Force a player on to a team.
+    permission: UHC.*
+    usage: /teamf <playername> <teamName>
   randomize:
     description: Randomize the teams!
     permission: UHC.*

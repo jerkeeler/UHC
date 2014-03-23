@@ -85,7 +85,8 @@ public class GameControl {
 	 */
 	public boolean endGame() {
 		updateVis(true);
-		countdown.cancelCountdown();
+		if(countdown != null)
+			countdown.cancelCountdown();
 		
 		// If the game is running
 		if(gameState.equals(GameState.ACTIVE)) {
@@ -112,7 +113,6 @@ public class GameControl {
 		return false;
 	}
 	
-	
 	/** d
 	 * Restart the game! In case something bad happens
 	 * 
@@ -121,6 +121,10 @@ public class GameControl {
 	public boolean resetGame() {
 		if(gameState.equals(GameState.STARTING))
 			return false;
+		
+		// cancel countdown if present
+		if(countdown != null)
+			countdown.cancelCountdown();
 		
 		// Clear teams
 		teamControl.cleanseTeams();
@@ -228,11 +232,28 @@ public class GameControl {
 	 * @return
 	 */
 	public boolean randomizeTeams() {
-		if(gameState.equals(GameState.ACTIVE))
+		if(gameState.equals(GameState.ACTIVE) || gameState.equals(GameState.ENDING))
 			return false;
 		
 		plugin.getServer().broadcastMessage(ChatColor.GOLD + "Randomizing teams!");
 		teamControl.shuffle();
+		return true;
+	}
+	
+	/**
+	 * Force a player on to a particular team
+	 * 
+	 * @param playerName The name of the player to force
+	 * @param teamName The name of the team you want to force them to
+	 * @return boolean true if forced, false otherwise
+	 */
+	public boolean teamForce(String playerName, String teamName) {
+		if(plugin.getServer().getPlayer(playerName) == null)
+			return false;
+		
+		Player player = plugin.getServer().getPlayer(playerName);
+		leaveTeam(player);
+		joinTeam(teamName, player);		
 		return true;
 	}
 	

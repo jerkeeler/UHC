@@ -84,22 +84,29 @@ public class GameCommands implements CommandExecutor {
 			// Reset the game
 			else if(label.equalsIgnoreCase("reset")) {
 				boolean temp = UHC.getController().resetGame();
-				if(!temp)
-					sender.sendMessage("The game has not started yet!");
+				if(!temp) sender.sendMessage(ChatColor.ITALIC + "The game has not started yet!");
 				return true;
 			} 
 			
 			// Cancel the countdown
 			else if(label.equalsIgnoreCase("cancel")) {
 				boolean temp = UHC.getController().cancelCountdown();
-				if(!temp) sender.sendMessage("There is no countdown to cancel!");
+				if(!temp) sender.sendMessage(ChatColor.ITALIC +  "There is no countdown to cancel!");
 				return true;
 			} 
 			
 			// Randomize teams
 			else if(label.equalsIgnoreCase("randomize")) {
 				boolean temp = UHC.getController().randomizeTeams();
-				if(!temp) sender.sendMessage("You can only randomize teams before the game starts!");
+				if(!temp) sender.sendMessage(ChatColor.ITALIC + "You can only randomize teams before the game starts!");
+				return true;
+			}
+			
+			// Team force a player onto a team 
+			else if(label.equalsIgnoreCase("teamf") && args.length > 1) { // TODO: Add more functionality.
+				boolean temp = UHC.getController().teamForce(args[0], args[1]);
+				if(!temp) sender.sendMessage(ChatColor.ITALIC + "That player does not exist or the team is full!");
+				else sender.sendMessage(ChatColor.ITALIC + "Congrats! They either joined the team or are now an observer! I'm too lazy to flesh this out at the moment!");
 				return true;
 			}
 		return false;

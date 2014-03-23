@@ -139,6 +139,7 @@ public class UHC extends JavaPlugin {
 		this.getCommand("reset").setExecutor(gameCmdListener);
 		this.getCommand("cancel").setExecutor(gameCmdListener);
 		this.getCommand("randomize").setExecutor(gameCmdListener);
+		this.getCommand("teamf").setExecutor(gameCmdListener);
 	}
 	
 	/**

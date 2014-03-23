@@ -122,7 +122,8 @@ public class CountdownTimer {
 	public boolean cancelCountdown() {
 		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The countdown has been " + ChatColor.DARK_RED + "cancelled" +
 				ChatColor.AQUA + "!");
-		Bukkit.getScheduler().cancelTask(timerID);
+		if(Bukkit.getScheduler().isQueued(timerID))
+			Bukkit.getScheduler().cancelTask(timerID);
 		UHC.getController().clearCountdownTimer();
 		return true;
 	}
