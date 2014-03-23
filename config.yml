@@ -14,9 +14,6 @@ GeneralOptions:
   # -1 = eternal night, 0 = normal day/night cycle, 1 = eternal day
   eternalDay: 0
   
-  # The name of the world file to be used
-  worldName: UHC
-  
   # Toggle to have the plugin add in the bedrock wall or not for you
   # Unless you already have a world file and toggle this to FALSE you will always
   # have a bedrock wall.

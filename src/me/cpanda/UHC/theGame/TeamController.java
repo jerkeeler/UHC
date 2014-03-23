@@ -178,24 +178,6 @@ public class TeamController {
 		player.setGameMode(GameMode.CREATIVE);
 		player.setDisplayName(obsColor + player.getName() + ChatColor.RESET);
 		mainScoreboard.getTeam(obsName).addPlayer(player);
-		
-		// Hide observers from every players
-		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
-		while(teamIt.hasNext()) {
-			Team team = teamIt.next();
-			for(OfflinePlayer p : team.getPlayers()) {
-				((Player) p).hidePlayer(player);
-				
-			}
-		}
-		
-		// Show observers to observers
-		for(OfflinePlayer p : mainScoreboard.getTeam(obsName).getPlayers()) {
-			((Player) p).showPlayer(player);
-			player.showPlayer((Player) p);
-		}
-		
-		// Make sure that 
 		return true;
 	}
 	

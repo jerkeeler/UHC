@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
@@ -61,8 +62,12 @@ public class GameControl {
 		// If pre-game
 		if(gameState.equals(GameState.STARTING)) {			
 			// TODO: Write teams to config file
+			FileConfiguration config = plugin.getConfig();
 			// Insert countdown
 			new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
+			config.set("GeneralOptions.gameState", 0);
+			plugin.saveConfig();
+	
 			return true;
 		}
 		
@@ -91,6 +96,9 @@ public class GameControl {
 			
 			// Set gamestate to ending
 			gameState = GameState.ENDING;
+			plugin.getConfig().set("GeneralOptions.gameState", 1);
+			plugin.saveConfig();
+			
 			return true;
 		}
 		

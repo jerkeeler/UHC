@@ -38,16 +38,6 @@ public class PlayerConnectionListener implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		Player joiningPlayer = event.getPlayer();		
 		
-		// Check to see if the player is in the correct world, if not, teleport them
-		if(!joiningPlayer.getLocation().getWorld().equals(UHC.getController().getUHCWorld().getWorld())) {
-			joiningPlayer.getLocation().setWorld(UHC.getController().getUHCWorld().getWorld());
-			joiningPlayer.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
-			joiningPlayer.setBedSpawnLocation(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
-		} else {
-			joiningPlayer.getLocation().setWorld(UHC.getController().getUHCWorld().getWorld());
-		}
-		
-		
 		/* Different scenarios
 		 Game is Starting
 			 - Auto put to observers
@@ -95,7 +85,8 @@ public class PlayerConnectionListener implements Listener {
 		}
 		
 		if(UHC.getController().isOnTeam(joiningPlayer))
-			joiningPlayer.setDisplayName(UHC.getController().getPlayerTeam(joiningPlayer).getPrefix() + joiningPlayer.getName());
+			joiningPlayer.setDisplayName(UHC.getController().getPlayerTeam(joiningPlayer).getPrefix()
+					+ joiningPlayer.getName() + ChatColor.RESET);
 
 		
 		UHC.getController().setScoreboard(joiningPlayer);

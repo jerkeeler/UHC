@@ -35,24 +35,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  */
 public class UHC extends JavaPlugin {
-	/* 
-	 * The most important variables for this plugin. All of them are stored in the
-	 * config.yml file in case the server crashes during play.
-	 * 
-	 * gameState - a GameState representing whether the game is in the pre-game(STARTING), currently
-	 * playing (ACTIVE), or in the post-game (ENDING) 
-	 * 
-	 * timePassed - the current amount of IRL time that has passed since the start of the
-	 * game, the clock
-	 *
-	public static GameState gameState;
-	public static int timePassed, clockSpeed;
 	
-	public static boolean spectate;
-	
-	public static UHCWorld uhcWorld;
-	public static UHC plugin;*/
-	
+	// The controller! Used to control things.
 	private static GameControl controller;
 	
 	
@@ -105,14 +89,13 @@ public class UHC extends JavaPlugin {
 		FileConfiguration config = this.getConfig();
 		
 		// Get the world variables from the config file
-		String worldName = config.getString("GeneralOptions.worldName");
 		int worldRadius = config.getInt("GeneralOptions.worldRadius");
 		int eternalDay = config.getInt("GeneralOptions.eternalDay");
 		boolean generateBedrock = config.getBoolean("GeneralOptions.generateBedrock");
 		boolean pregenChunks = config.getBoolean("GeneralOptions.pregenChunks");
 		
 		// The the world into a uhcWorld
-		UHCWorld uhcWorld = UHCWorld.loadWorld(worldName, worldRadius,generateBedrock, pregenChunks, eternalDay, server);
+		UHCWorld uhcWorld = UHCWorld.loadWorld(worldRadius,generateBedrock, pregenChunks, eternalDay, server);
 		
 		// Initiate GameControl and TeamControl class
 		int numTeams = config.getInt("TeamOptions.numberOfTeams");
