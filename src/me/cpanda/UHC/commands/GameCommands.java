@@ -41,29 +41,66 @@ public class GameCommands implements CommandExecutor {
 				isPlayer = true;
 			}
 			
+			// Start the game
 			if(label.equalsIgnoreCase("start") && (!isPlayer || player.isOp())) {
 				UHC.getController().getUHCWorld().fixBedrock();
 				return UHC.getController().startGame();
-			} else if(label.equalsIgnoreCase("end") && (!isPlayer || player.isOp())) {
+			} 
+			
+			// End the game
+			else if(label.equalsIgnoreCase("end") && (!isPlayer || player.isOp())) {
 				return UHC.getController().endGame();
-			} else if(label.equalsIgnoreCase("join") && isPlayer) {
+			} 
+			
+			// Join a team
+			else if(label.equalsIgnoreCase("join") && isPlayer) {
 				if(args.length == 0)
 					return UHC.getController().joinTeam(player);
 				else
 					return UHC.getController().joinTeam(args[0], player);
-			} else if(label.equalsIgnoreCase("leave") && isPlayer) {
+			} 
+			
+			// Leave your team
+			else if(label.equalsIgnoreCase("leave") && isPlayer) {
 				return UHC.getController().leaveTeam(player);
-			} else if(label.equalsIgnoreCase("teams")) {
+			} 
+			
+			// Print the teams
+			else if(label.equalsIgnoreCase("teams")) {
 				return UHC.getController().printTeams(sender);
-			} else if(label.equalsIgnoreCase("fixbedrock")) {
+			} 
+			
+			// Fix holes in the bedrock
+			else if(label.equalsIgnoreCase("fixbedrock")) {
 				plugin.getServer().broadcastMessage(ChatColor.DARK_RED + "Fixing bedrock... Prepare for lag!");
 				return UHC.getController().getUHCWorld().fixBedrock();
-			} else if(label.equalsIgnoreCase("g") && isPlayer && args.length > 0) {
+			} 
+			
+			// Talk in global chat
+			else if(label.equalsIgnoreCase("g") && isPlayer && args.length > 0) {
 				return UHC.getController().talkGlobal(player, args);
-			} else if(label.equalsIgnoreCase("restart")) {
-				return UHC.getController().restartGame();
-			} else if(label.equalsIgnoreCase("cancel")) {
-				return UHC.getController().cancelCountdown(sender);
+			} 
+			
+			// Reset the game
+			else if(label.equalsIgnoreCase("reset")) {
+				boolean temp = UHC.getController().resetGame();
+				if(!temp)
+					sender.sendMessage("The game has not started yet!");
+				return true;
+			} 
+			
+			// Cancel the countdown
+			else if(label.equalsIgnoreCase("cancel")) {
+				boolean temp = UHC.getController().cancelCountdown();
+				if(!temp) sender.sendMessage("There is no countdown to cancel!");
+				return true;
+			} 
+			
+			// Randomize teams
+			else if(label.equalsIgnoreCase("randomize")) {
+				boolean temp = UHC.getController().randomizeTeams();
+				if(!temp) sender.sendMessage("You can only randomize teams before the game starts!");
+				return true;
 			}
 		return false;
 	}

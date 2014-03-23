@@ -42,11 +42,11 @@ public class CountdownTimer {
 		this.plugin = plugin;
 		timeLeft = seconds;
 		
-		timerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Countdowner(msg), delay, 20); 
+		timerID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Countdowner(msg), delay*20, 20); 
 	}
 
 	/*
-	 * Do they actual stuff for the countdown
+	 * Do the actual stuff for the countdown
 	 */
 	private class Countdowner extends BukkitRunnable {
 		private String msg;
@@ -71,14 +71,23 @@ public class CountdownTimer {
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.AQUA + Integer.toString(timeLeft) + ChatColor.RESET);
 				plugin.getServer().broadcastMessage(toPrint);	
 				first = false;
-			} else if(timeLeft <= 10 && timeLeft > 0) {
+			} 
+			
+			else if(timeLeft <= 10 && timeLeft > 0) {
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.RED + Integer.toString(timeLeft) + ChatColor.RESET);
 				plugin.getServer().broadcastMessage(toPrint);			
-			} else if(timeLeft % 5 == 0 && timeLeft > 0) {
+			} 
+			
+			else if(timeLeft % 5 == 0 && timeLeft > 0) {
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.AQUA + Integer.toString(timeLeft) + ChatColor.RESET);
 				plugin.getServer().broadcastMessage(toPrint);
-			} else if (timeLeft <= 0){		
+			} 
+			
+			else if (timeLeft <= 0){		
 				UHC.getController().clearCountdownTimer();
+				
+				// Update observer visibility
+				UHC.getController().updateVis(false);
 				
 				// Clear inventories
 				Utils.clearInventories(plugin);
@@ -114,6 +123,7 @@ public class CountdownTimer {
 		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The countdown has been " + ChatColor.DARK_RED + "cancelled" +
 				ChatColor.AQUA + "!");
 		Bukkit.getScheduler().cancelTask(timerID);
+		UHC.getController().clearCountdownTimer();
 		return true;
 	}
 }

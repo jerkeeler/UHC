@@ -82,6 +82,9 @@ public class PlayerConnectionListener implements Listener {
 					joiningPlayer.kickPlayer(ChatColor.RED + "The game is in progress!!!");
 				}					
 			}
+			
+			// Update the observer visibility
+			UHC.getController().updateVis(false);
 		}
 		
 		if(UHC.getController().isOnTeam(joiningPlayer))

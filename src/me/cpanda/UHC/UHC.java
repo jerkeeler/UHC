@@ -136,8 +136,9 @@ public class UHC extends JavaPlugin {
 		this.getCommand("teams").setExecutor(gameCmdListener);
 		this.getCommand("fixbedrock").setExecutor(gameCmdListener);
 		this.getCommand("g").setExecutor(gameCmdListener);
-		this.getCommand("restart").setExecutor(gameCmdListener);
+		this.getCommand("reset").setExecutor(gameCmdListener);
 		this.getCommand("cancel").setExecutor(gameCmdListener);
+		//this.getCommand("randomize").setExecutor(gameCmdListener);
 	}
 	
 	/**

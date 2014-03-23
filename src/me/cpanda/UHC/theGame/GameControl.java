@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
@@ -31,7 +30,6 @@ public class GameControl {
 	private UHCWorld uhcWorld;
 	private int timerID, timePassed, clockSpeed;;	
 	private boolean spectate;
-	private ArrayList<Player> dead;
 	private CountdownTimer countdown;
 	
 	/**
@@ -39,6 +37,11 @@ public class GameControl {
 	 * 
 	 * @param plugin The plugin, to get the server and such
 	 * @param teamController The thing that controls the teams!
+	 * @param UHCWorld The wolrd in which the game takes place
+	 * @param timePassed The time that has passed so far in the game
+	 * @param clockSpeed the time, in minutes, for which a broadcast should be sent out
+	 * @param spectate Boolean if spectating is allowed or not
+	 * @param gameState The state of the current game.
 	 */
 	public GameControl(UHC plugin, TeamController teamController, UHCWorld uhcWorld, int timePassed, int clockSpeed, boolean spectate,
 			GameState gameState) {
@@ -64,10 +67,9 @@ public class GameControl {
 		// If pre-game
 		if(gameState.equals(GameState.STARTING)) {			
 			// TODO: Write teams to config file
-			FileConfiguration config = plugin.getConfig();
-			// Insert countdown
+			// Start the countdown
 			countdown = new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
-			config.set("GeneralOptions.gameState", 0);
+			plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
 			plugin.saveConfig();
 	
 			return true;
@@ -82,10 +84,10 @@ public class GameControl {
 	 * @return boolean true if game ended, false otherwise 
 	 */
 	public boolean endGame() {
-		if(countdown != null)
-			countdown.cancelCountdown();
+		updateVis(true);
+		countdown.cancelCountdown();
 		
-		// If pre-game
+		// If the game is running
 		if(gameState.equals(GameState.ACTIVE)) {
 			// Set gamemodes
 			for(Player player : plugin.getServer().getOnlinePlayers()) {
@@ -101,13 +103,74 @@ public class GameControl {
 			
 			// Set gamestate to ending
 			gameState = GameState.ENDING;
-			plugin.getConfig().set("GeneralOptions.gameState", 1);
+			plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
 			plugin.saveConfig();
 			
 			return true;
 		}
 		
 		return false;
+	}
+	
+	
+	/** d
+	 * Restart the game! In case something bad happens
+	 * 
+	 * @return boolean true if game is restarted, false otherwise
+	 */
+	public boolean resetGame() {
+		if(gameState.equals(GameState.STARTING))
+			return false;
+		
+		// Clear teams
+		teamControl.cleanseTeams();
+		Utils.clearInventories(plugin);
+		Utils.healPlayers(plugin);
+		
+		// Teleport everyone to spawn
+		for(Player p : plugin.getServer().getOnlinePlayers()) {
+			p.teleport(uhcWorld.getWorld().getSpawnLocation());
+		}
+		
+		// Set world to preUHCRules and cancel gametimer
+		uhcWorld.setPreUHCRules();
+		if(gameState.equals(GameState.ACTIVE))
+			Bukkit.getScheduler().cancelTask(timerID);	
+		timePassed = 0;
+		gameState = GameState.STARTING;
+		plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
+		plugin.saveConfig();
+		
+		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The game has been " + ChatColor.DARK_GREEN + "RESTARTED" + 
+				ChatColor.AQUA + "!");
+		
+		return true;
+	}
+	
+	/**
+	 * Cancel the current countdown
+	 * 
+	 * @return true if cancelled, false otherwise
+	 */
+	public boolean cancelCountdown() {
+		if(countdown != null) {
+			// Cancel timer and reset gamestate
+			gameState = GameState.STARTING;
+			plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
+			plugin.saveConfig();
+			countdown.cancelCountdown();
+			Utils.clearInventories(plugin);
+			Utils.healPlayers(plugin);
+			uhcWorld.setPreUHCRules();
+			
+			// Teleport all players to spawn
+			for(Player p : plugin.getServer().getOnlinePlayers()) {
+				p.teleport(uhcWorld.getWorld().getSpawnLocation());
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	/**
@@ -157,6 +220,45 @@ public class GameControl {
 		} else 
 			return teamControl.leaveTeam(player);
 		
+		return true;
+	}	
+	
+	/**
+	 * Randomize the teams with all online players
+	 * @return
+	 */
+	public boolean randomizeTeams() {
+		if(gameState.equals(GameState.ACTIVE))
+			return false;
+		return false;
+	}
+	
+	/**
+	 * Update the visibility of the observers
+	 */
+	public void updateVis(boolean viewAll) {
+		teamControl.updateVisibility(viewAll);
+	}
+
+	/**
+	 * Send a message to all players
+	 * 
+	 * @param args The array of arguments
+	 * @return true
+	 */
+	public boolean talkGlobal(Player player, String[] args) {
+		
+		// Make message
+		String message = "<" + player.getDisplayName() + ChatColor.RESET + ">: ";
+		for(int i = 0; i < args.length; i++) {
+			message += args[i] + " ";
+		}
+		
+		// Send message to all online players
+		for(Player p : plugin.getServer().getOnlinePlayers()) {
+			p.sendMessage(message);
+		}
+		plugin.getServer().getLogger().info(message);
 		return true;
 	}
 	
@@ -295,44 +397,6 @@ public class GameControl {
 	}
 	
 	/**
-	 * Is the player dead? Check to see if they are or not
-	 * 
-	 * @param player The player to check if they are dead
-	 * @return boolean yes if dead
-	 */
-	public boolean isDead(Player player) {
-		Iterator<Player> deads = dead.iterator();
-		while(deads.hasNext()) {
-			Player p = deads.next();
-			if(p.getName().equalsIgnoreCase(player.getName()))
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Send a message to all players
-	 * 
-	 * @param args The array of arguments
-	 * @return true
-	 */
-	public boolean talkGlobal(Player player, String[] args) {
-		
-		// Make message
-		String message = "<" + player.getDisplayName() + ChatColor.RESET + ">: ";
-		for(int i = 0; i < args.length; i++) {
-			message += args[i] + " ";
-		}
-		
-		// Send message to all online players
-		for(Player p : plugin.getServer().getOnlinePlayers()) {
-			p.sendMessage(message);
-		}
-		plugin.getServer().getLogger().info(message);
-		return true;
-	}
-	
-	/**
 	 * Get the team sizes
 	 * @return int the number of players per team
 	 */
@@ -347,61 +411,6 @@ public class GameControl {
 	 */
 	public Set<Team> getTeams() {
 		return teamControl.getTeams();
-	}
-	
-	/**
-	 * Restart the game! In case something bad happens
-	 * 
-	 * @return boolean true if game is restarted, false otherwise
-	 */
-	public boolean restartGame() {
-		if(gameState.equals(GameState.STARTING))
-			return false;
-		
-		teamControl.cleanseTeams();
-		Utils.clearInventories(plugin);
-		Utils.healPlayers(plugin);
-		
-		for(Player p : plugin.getServer().getOnlinePlayers()) {
-			p.teleport(uhcWorld.getWorld().getSpawnLocation());
-		}
-		
-		uhcWorld.setPreUHCRules();
-		if(gameState.equals(GameState.ACTIVE))
-			Bukkit.getScheduler().cancelTask(timerID);
-		
-		gameState = GameState.STARTING;
-		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The game has been " + ChatColor.DARK_GREEN + "RESTARTED" + 
-				ChatColor.AQUA + "!");
-		
-		timePassed = 0;
-		
-		return true;
-	}
-	
-	/**
-	 * Cancel the current countdown
-	 * 
-	 * @return true if cancelled, false otherwise
-	 */
-	public boolean cancelCountdown(CommandSender sender) {
-		if(countdown != null) {
-			gameState = GameState.STARTING;
-			countdown.cancelCountdown();
-			Utils.clearInventories(plugin);
-			Utils.healPlayers(plugin);
-			
-			for(Player p : plugin.getServer().getOnlinePlayers()) {
-				p.teleport(uhcWorld.getWorld().getSpawnLocation());
-			}
-			
-			uhcWorld.setPreUHCRules();
-			clearCountdownTimer();
-			return true;
-		} else {
-			sender.sendMessage("There is no countdown running!");
-			return false;
-		}
 	}
 	
 	/**

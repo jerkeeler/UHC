@@ -3,6 +3,7 @@ package me.cpanda.UHC.theGame;
 import java.util.*;
 
 import me.cpanda.UHC.UHC;
+import me.cpanda.UHC.enums.GameState;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -20,6 +21,7 @@ import org.bukkit.scoreboard.*;
  * This class controls all teams and the scoreboard
  */
 public class TeamController {
+	// Constants
 	private String defaultName = "DEFAULT";
 	private String obsName = "Observer";
 	private ChatColor obsColor = ChatColor.AQUA;
@@ -29,11 +31,11 @@ public class TeamController {
 	private String teamFullMessage = "That team is already " + ChatColor.DARK_RED + "full" + ChatColor.RESET + "!";
 	private String alreadyOnTeamMessage = "You are already " + ChatColor.DARK_RED + "on " + ChatColor.RESET + "a team!";
 	
+	// Variables per game
 	private int teamSizes, totalNumTeams;
 	private UHC plugin;
 	private ScoreboardManager scbManager;
 	private Scoreboard mainScoreboard;
-	private HashMap<String, Scoreboard> scoreboards = new HashMap<String, Scoreboard>();
 	
 	/**
 	 * Default constructor
@@ -46,7 +48,6 @@ public class TeamController {
 		this.plugin = plugin;
 		scbManager = plugin.getServer().getScoreboardManager();
 		mainScoreboard = scbManager.getNewScoreboard();
-		scoreboards.put("mainScoreboard", mainScoreboard);
 		
 		this.teamSizes = teamSizes;
 		this.totalNumTeams = numTeams;
@@ -119,13 +120,14 @@ public class TeamController {
 		// Make sure that the player doesn't join the observers team
 		while(teamPref.equalsIgnoreCase(obsName)) {
 			Random rnd = new Random();
-			int choice = rnd.nextInt(totalNumTeams);
+			int choice = rnd.nextInt(totalNumTeams) + 1;
 			Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
 			
 			for(int i = 0; i <= choice; i++) {
 				teamPref = teamIt.next().getName();
 			}
 		}
+		
 		return joinTeam(teamPref, player);
 	}
 	
@@ -175,7 +177,10 @@ public class TeamController {
 	private boolean joinObservers(Player player) {
 		player.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
 		player.sendMessage("You are now an " + obsColor + "observer" + ChatColor.RESET + "!");
-		player.setGameMode(GameMode.CREATIVE);
+		//if(UHC.getController().getGameState().equals(GameState.STARTING))
+			//player.setGameMode(GameMode.ADVENTURE);
+		//else
+			player.setGameMode(GameMode.CREATIVE);
 		player.setDisplayName(obsColor + player.getName() + ChatColor.RESET);
 		mainScoreboard.getTeam(obsName).addPlayer(player);
 		return true;
@@ -279,6 +284,7 @@ public class TeamController {
 		for(Team team : mainScoreboard.getTeams()) {
 			if(team.getName().equals(obsName))
 				continue;
+			
 			for(OfflinePlayer player : team.getPlayers()) {
 				command += " " + player.getName();
 				if(player instanceof Player) 
@@ -361,6 +367,26 @@ public class TeamController {
 				continue;
 			for(OfflinePlayer p : teams.getPlayers()) {
 				leaveTeam((Player) p);
+			}
+		}
+	}
+	
+	/**
+	 * Updates the visibility of all observers and players
+	 * Should be called when the game starts, when the game ends, and when an
+	 * observer joines during the game.
+	 */
+	public void updateVisibility(boolean viewAll) {	
+		for(Player p1 : plugin.getServer().getOnlinePlayers()) {
+			Team p1Team = getPlayerTeam(p1);
+			for(Player p2 : plugin.getServer().getOnlinePlayers()) {
+				if(viewAll)
+					p1.showPlayer(p2);
+				else if(p1Team.getName().equals(obsName)) {
+					p1.showPlayer(p2);
+				} else if(getPlayerTeam(p2).getName().equals(obsName)) {
+					p1.hidePlayer(p2);
+				}
 			}
 		}
 	}

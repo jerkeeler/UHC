@@ -9,7 +9,11 @@ database: false
 prefix: UHC
 
 commands:
-  restart:
+#  randomize:
+#  	description: Randomize the teams!
+#  	permission: UHC.*
+# 	usage: /randomize
+  reset:
     description: Teleport everyone back to spawn add everyone to observers and start over
     permission: UHC.*
     usage: /restart

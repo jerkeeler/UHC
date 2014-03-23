@@ -30,6 +30,9 @@ public class GameplayTimer extends BukkitRunnable {
 		this.clockSpeed = clockSpeed;
 	}
 
+	/**
+	 * This is the logic that runs every minute
+	 */
 	@Override
 	public void run() {
 		if(UHC.getController().getGameState().equals(GameState.ACTIVE)) {
