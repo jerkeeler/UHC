@@ -1,5 +1,6 @@
 package me.cpanda.UHC;
 
+import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Cow;
@@ -59,6 +60,7 @@ public class Utils {
 	 * @return boolean true if players, false otherwise
 	 */
 	public static boolean healPlayers(UHC plugin) {
+		plugin.getServer().broadcastMessage(ChatColor.DARK_RED + "HEALING all players!");
 		if(plugin.getServer().getOnlinePlayers() == null)
 			return false;
 		else {
@@ -69,5 +71,18 @@ public class Utils {
 			}
 		return true;
 		}
+	}
+	
+	/**
+	 * Clear the inventories of every online player
+	 * 
+	 * @param plugin The plugin incase needed
+	 * @return boolean true
+	 */
+	public static boolean clearInventories(UHC plugin) {
+		for(Player player : plugin.getServer().getOnlinePlayers()) {
+			player.getInventory().clear();
+		}
+		return true;
 	}
 }

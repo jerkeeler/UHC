@@ -65,6 +65,7 @@ public class CountdownTimer {
 			}
 			
 			if(first) {
+				UHC.getController().setGameState(GameState.ACTIVE);
 				plugin.getServer().broadcastMessage(ChatColor.RED + "Fixing bedrock...");
 				UHC.getController().getUHCWorld().fixBedrock();
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.AQUA + Integer.toString(timeLeft) + ChatColor.RESET);
@@ -76,7 +77,10 @@ public class CountdownTimer {
 			} else if(timeLeft % 5 == 0 && timeLeft > 0) {
 				String toPrint = msg.replace("#{COUNTDOWN}", ChatColor.AQUA + Integer.toString(timeLeft) + ChatColor.RESET);
 				plugin.getServer().broadcastMessage(toPrint);
-			} else if (timeLeft <= 0){			
+			} else if (timeLeft <= 0){		
+				// Clear inventories
+				Utils.clearInventories(plugin);
+				
 				// Heal
 				Utils.healPlayers(plugin);			
 				
@@ -86,12 +90,11 @@ public class CountdownTimer {
 				// Stuff to start the game
 				// Set world stuff to correct values
 				UHC.getController().getUHCWorld().setUHCRules();
-				plugin.getServer().broadcastMessage(ChatColor.DARK_GREEN + "GAME IS STARTING " 
-						+ ChatColor.DARK_RED + "NOW" + ChatColor.DARK_GREEN + "!");
+				plugin.getServer().broadcastMessage(ChatColor.AQUA + "GAME IS STARTING " 
+						+ ChatColor.DARK_RED + "NOW" + ChatColor.AQUA + "!");
 				
 				UHC.getController().setTimerID(Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, 
-						new GameplayTimer(plugin, UHC.getController().getClockSpeed()), 0, 20*1));
-				UHC.getController().setGameState(GameState.ACTIVE);
+						new GameplayTimer(plugin, UHC.getController().getClockSpeed()), 20*60, 20*60));
 
 				Bukkit.getScheduler().cancelTask(timerID);
 			}

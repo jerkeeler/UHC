@@ -3,7 +3,7 @@ package me.cpanda.UHC.listeners;
 import me.cpanda.UHC.UHC;
 import me.cpanda.UHC.enums.GameState;
 
-import org.bukkit.GameMode;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,26 +36,76 @@ public class PlayerConnectionListener implements Listener {
 	 */
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
-		Player joiningPlayer = event.getPlayer();
-		// TODO: Add player to the spectators team if game is in progress
-		// TODO: Check to see if dead
+		Player joiningPlayer = event.getPlayer();		
 		
 		// Check to see if the player is in the correct world, if not, teleport them
-		joiningPlayer.getLocation().setWorld(UHC.getController().getUHCWorld().getWorld());
-		joiningPlayer.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
-		joiningPlayer.setBedSpawnLocation(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
-		
-		// Set gamemode to adventure unless the player is OP or game is active
-		if(!joiningPlayer.isOp() && !UHC.getController().getGameState().equals(GameState.ACTIVE)) {
-			joiningPlayer.setGameMode(GameMode.ADVENTURE);
+		if(!joiningPlayer.getLocation().getWorld().equals(UHC.getController().getUHCWorld().getWorld())) {
+			joiningPlayer.getLocation().setWorld(UHC.getController().getUHCWorld().getWorld());
+			joiningPlayer.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
+			joiningPlayer.setBedSpawnLocation(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
+		} else {
+			joiningPlayer.getLocation().setWorld(UHC.getController().getUHCWorld().getWorld());
 		}
+		
+		
+		/* Different scenarios
+		 Game is Starting
+			 - Auto put to observers
+		 Game is Active
+		 	Spectate = true
+		 		On team
+		 			Don't put in observers
+		 		Not on team
+		 			Put in observers
+		 	Spectate = false
+		 		On team
+		 			Don't put in observers
+		 		Is OP?
+		 			Put in observers
+	 			Not on team
+		 			kick
+		 Game is Over
+			- Auto put to observers
+		 */
+		// If game is starting put everyone in observers
+		if(UHC.getController().getGameState().equals(GameState.STARTING)
+				|| UHC.getController().getGameState().equals(GameState.ENDING)) {
+			UHC.getController().spectate(joiningPlayer);
+		} 
+		
+		// If game is active
+		else {
+			// If spectating is allowed
+			if(UHC.getController().canSpectate()) {
+				if(!UHC.getController().isOnTeam(joiningPlayer))
+					UHC.getController().spectate(joiningPlayer);
+			}
+			
+			// If spectating isn't allowed
+			else {
+				if(UHC.getController().isOnTeam(joiningPlayer)) {
+					// Do nothing
+				}
+				else if(joiningPlayer.isOp())
+					UHC.getController().spectate(joiningPlayer);
+				else {
+					joiningPlayer.kickPlayer(ChatColor.RED + "The game is in progress!!!");
+				}					
+			}
+		}
+		
+		if(UHC.getController().isOnTeam(joiningPlayer))
+			joiningPlayer.setDisplayName(UHC.getController().getPlayerTeam(joiningPlayer).getPrefix() + joiningPlayer.getName());
+
 		
 		UHC.getController().setScoreboard(joiningPlayer);
 	}
 	
-
+	/**
+	 * Event that is called when a player leaves
+	 * @param event
+	 */
 	@EventHandler
 	public void onLeave(PlayerQuitEvent event) {
-		
 	}
 }

@@ -21,7 +21,9 @@ import org.bukkit.scoreboard.*;
  */
 public class TeamController {
 	private String defaultName = "DEFAULT";
-	private ChatColor[] teamColors = { ChatColor.RED, ChatColor.BLUE, ChatColor.AQUA, ChatColor.DARK_GREEN, ChatColor.DARK_PURPLE,
+	private String obsName = "Observer";
+	private ChatColor obsColor = ChatColor.AQUA;
+	private ChatColor[] teamColors = { ChatColor.RED, ChatColor.BLUE, ChatColor.GREEN, ChatColor.DARK_GREEN, ChatColor.DARK_PURPLE,
 			ChatColor.GOLD, ChatColor.BLACK, ChatColor.DARK_AQUA, ChatColor.DARK_RED, ChatColor.LIGHT_PURPLE };
 	private String doesNotExistMessage = "That team " + ChatColor.DARK_RED + "does not exist" + ChatColor.RESET + "!";
 	private String teamFullMessage = "That team is already " + ChatColor.DARK_RED + "full" + ChatColor.RESET + "!";
@@ -54,6 +56,15 @@ public class TeamController {
 	}
 	
 	/**
+	 * The player to set the scoreboard for
+	 * 
+	 * @param player The player
+	 */
+	public void setScoreboard(Player player) {
+		player.setScoreboard(mainScoreboard);
+	}
+	
+	/**
 	 * Add the main objectives to the mainScoreboard!
 	 */
 	private void addObjectives() {
@@ -67,6 +78,9 @@ public class TeamController {
 	 * Create the teams!
 	 */
 	private void createTeams() {
+		// Add spectator team
+		mainScoreboard.registerNewTeam(obsName);
+		mainScoreboard.getTeam(obsName).setPrefix("" + obsColor);
 		
 		// Only add one team if team sizes of 1
 		if(teamSizes == 1) {
@@ -100,13 +114,17 @@ public class TeamController {
 	public boolean joinRandomTeam(Player player) {
 		if(teamSizes == 1)
 			return joinTeam("Default", player);
-		
-		Random rnd = new Random();
-		int choice = rnd.nextInt(totalNumTeams);
-		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
-		String teamPref = "";
-		for(int i = 0; i <= choice; i++) {
-			teamPref = teamIt.next().getName();
+
+		String teamPref = obsName;
+		// Make sure that the player doesn't join the observers team
+		while(teamPref.equalsIgnoreCase(obsName)) {
+			Random rnd = new Random();
+			int choice = rnd.nextInt(totalNumTeams);
+			Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
+			
+			for(int i = 0; i <= choice; i++) {
+				teamPref = teamIt.next().getName();
+			}
 		}
 		return joinTeam(teamPref, player);
 	}
@@ -119,6 +137,10 @@ public class TeamController {
 	 * @return boolean true if they joined a team
 	 */
 	public boolean joinTeam(String teamPref, Player player) {
+		if(teamPref.equals(obsName)) {
+			return joinObservers(player);
+		}
+		
 		// Add player to "Default" team if free-for-all
 		if(teamSizes == 1) {
 			mainScoreboard.getTeam(defaultName).addPlayer(player);
@@ -132,14 +154,48 @@ public class TeamController {
 			player.sendMessage(doesNotExistMessage);
 		else if(mainScoreboard.getTeam(teamPref).getPlayers().size() >= teamSizes)
 			player.sendMessage(teamFullMessage);
-		else if(mainScoreboard.getPlayerTeam(player) != null)
+		else if(!mainScoreboard.getPlayerTeam(player).getName().equals(obsName))
 			player.sendMessage(alreadyOnTeamMessage);
 		else {
 			mainScoreboard.getTeam(teamPref).addPlayer(player);
+			player.setDisplayName(mainScoreboard.getTeam(teamPref).getPrefix() + player.getName() + ChatColor.RESET);
 			player.sendMessage("You have " + ChatColor.DARK_GREEN + "joined " + ChatColor.RESET + "the " + 
 					ChatColor.valueOf(mainScoreboard.getTeam(teamPref).getName()) + mainScoreboard.getTeam(teamPref).getName() +
 					ChatColor.RESET + " team!");
 		}
+		return true;
+	}
+	
+	/**
+	 * Add the player to the observers team and set permissions
+	 * 
+	 * @param player The player to join observers
+	 * @return true
+	 */
+	private boolean joinObservers(Player player) {
+		player.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
+		player.sendMessage("You are now an " + obsColor + "observer" + ChatColor.RESET + "!");
+		player.setGameMode(GameMode.CREATIVE);
+		player.setDisplayName(obsColor + player.getName() + ChatColor.RESET);
+		mainScoreboard.getTeam(obsName).addPlayer(player);
+		
+		// Hide observers from every players
+		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
+		while(teamIt.hasNext()) {
+			Team team = teamIt.next();
+			for(OfflinePlayer p : team.getPlayers()) {
+				((Player) p).hidePlayer(player);
+				
+			}
+		}
+		
+		// Show observers to observers
+		for(OfflinePlayer p : mainScoreboard.getTeam(obsName).getPlayers()) {
+			((Player) p).showPlayer(player);
+			player.showPlayer((Player) p);
+		}
+		
+		// Make sure that 
 		return true;
 	}
 	
@@ -150,10 +206,13 @@ public class TeamController {
 	 * @return true
 	 */
 	public boolean leaveTeam(Player player) {
+		player.setDisplayName(player.getName());
+		
 		// Leave default team if free-for-all
 		if(teamSizes == 1) {
 			mainScoreboard.getTeam(defaultName).removePlayer(player);
 			player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the game!");
+			joinTeam("Observer", player);
 			return true;
 		}
 		
@@ -161,13 +220,17 @@ public class TeamController {
 		else {
 			for(Team team : mainScoreboard.getTeams()) {
 				if(team.hasPlayer(player)) {
-					player.sendMessage("You have been " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the " + 
+					if(team.getName().equals(obsName))
+						break;
+					
+					player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the " + 
 							ChatColor.valueOf(team.getName()) + team.getName() + ChatColor.RESET + " team!");
 					team.removePlayer(player);
 					break;
 				}
 			}
 		}
+		joinTeam("Observer", player);
 		return true;
 	}
 	
@@ -181,20 +244,13 @@ public class TeamController {
 		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
 		while(teamIt.hasNext()) {
 			Team team = teamIt.next();
+			if(team.getName().equals(obsName))
+				continue;
 			if(team.hasPlayer(player))
 				return true;
 		}
 		
 		return false;
-	}
-	
-	/**
-	 * The player to set the scoreboard for
-	 * 
-	 * @param player The player
-	 */
-	public void setScoreboard(Player player) {
-		player.setScoreboard(mainScoreboard);
 	}
 	
 	/**
@@ -213,12 +269,13 @@ public class TeamController {
 		Iterator<Team> teamIt = mainScoreboard.getTeams().iterator();
 		while(teamIt.hasNext()) {
 			Team team = teamIt.next();
+			if(team.getName().equals(obsName))
+				continue;
 			sender.sendMessage(ChatColor.valueOf(team.getDisplayName()) + team.getDisplayName() + " " + ChatColor.RESET + team.getSize() 
 					+ ChatColor.BLACK + "/" + ChatColor.RESET + teamSizes);
 		}
 		return true;
 	}
-	
 	
 	/**
 	 * Teleport all teams out to a random location
@@ -238,6 +295,8 @@ public class TeamController {
 		
 		// Add all players on teams to the command
 		for(Team team : mainScoreboard.getTeams()) {
+			if(team.getName().equals(obsName))
+				continue;
 			for(OfflinePlayer player : team.getPlayers()) {
 				command += " " + player.getName();
 				if(player instanceof Player) 
@@ -265,6 +324,7 @@ public class TeamController {
 		freezeEffects.add(new PotionEffect(PotionEffectType.SLOW, 20*seconds, 100));
 		freezeEffects.add(new PotionEffect(PotionEffectType.JUMP, 20*seconds, 126));
 		freezeEffects.add(new PotionEffect(PotionEffectType.WATER_BREATHING, 20*seconds, 100));
+		freezeEffects.add(new PotionEffect(PotionEffectType.HEAL, 20*seconds, 100));
 		
 		for(Team team : mainScoreboard.getTeams()) {
 			for(OfflinePlayer player : team.getPlayers()) {
@@ -283,5 +343,43 @@ public class TeamController {
 	public int getTeamSizes() {
 		return teamSizes;
 	}
-
+	
+	/**
+	 * Get the team that the player is on
+	 * 
+	 * @param player The player to get the team of
+	 * @return Team the player's team
+	 */
+	public Team getPlayerTeam(Player player) {
+		for(Team team : mainScoreboard.getTeams()) {
+			for(OfflinePlayer p : team.getPlayers()) {
+				if(player.getName().equalsIgnoreCase(p.getName())) {
+					return team;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get the teams!
+	 * @return Team[] the teams
+	 */
+	public Set<Team> getTeams() {
+		return mainScoreboard.getTeams();
+	}
+	
+	/**
+	 * Remove everyone from their teams
+	 */
+	public void cleanseTeams() {
+		for(Team teams : mainScoreboard.getTeams()) {
+			if(teams.getName().equalsIgnoreCase(obsName))
+				continue;
+			for(OfflinePlayer p : teams.getPlayers()) {
+				leaveTeam((Player) p);
+			}
+		}
+	}
 }

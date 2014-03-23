@@ -5,7 +5,9 @@ import java.util.*;
 import me.cpanda.UHC.commands.GameCommands;
 import me.cpanda.UHC.commands.UtilCommands;
 import me.cpanda.UHC.enums.GameState;
+import me.cpanda.UHC.listeners.MessageListener;
 import me.cpanda.UHC.listeners.PlayerConnectionListener;
+import me.cpanda.UHC.listeners.PlayerDeathListener;
 import me.cpanda.UHC.theGame.GameControl;
 import me.cpanda.UHC.theGame.TeamController;
 import me.cpanda.UHCWorldGen.UHCWorld;
@@ -121,17 +123,22 @@ public class UHC extends JavaPlugin {
 		GameState gameState = GameState.intToGameState(config.getInt("GeneralOptions.gameState"));
 		if(gameState.equals(GameState.ENDING)) gameState = GameState.STARTING;
 		
+		// Set the world to the desired state
+		if(gameState.equals(GameState.STARTING))
+			uhcWorld.setPreUHCRules();
+		else
+			uhcWorld.setUHCRules();
+		
 		int timePassed = config.getInt("GeneralOptions.timePassed");
 		int clockSpeed = config.getInt("GeneralOptions.clockSpeed");
 		boolean spectate = config.getBoolean("GeneralOptions.spectate");
 		
 		controller = new GameControl(this, teamController, uhcWorld, timePassed, clockSpeed, spectate, gameState);
 		
-		// Register all events
-		PlayerConnectionListener connectionListener = new PlayerConnectionListener(this);
-		
-		server.getPluginManager().registerEvents(connectionListener, this);
-		server.getPluginManager().registerEvents(connectionListener, this);
+		// Register all events	
+		server.getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
+		server.getPluginManager().registerEvents(new MessageListener(this), this);
+		server.getPluginManager().registerEvents(new PlayerDeathListener(this), this);
 		
 		// Register all commands
 		UtilCommands utilCmdListener = new UtilCommands(this);
@@ -145,6 +152,8 @@ public class UHC extends JavaPlugin {
 		this.getCommand("leave").setExecutor(gameCmdListener);
 		this.getCommand("teams").setExecutor(gameCmdListener);
 		this.getCommand("fixbedrock").setExecutor(gameCmdListener);
+		this.getCommand("g").setExecutor(gameCmdListener);
+		this.getCommand("restart").setExecutor(gameCmdListener);
 	}
 	
 	/**

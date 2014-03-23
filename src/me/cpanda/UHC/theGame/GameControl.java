@@ -1,6 +1,9 @@
 package me.cpanda.UHC.theGame;
 
+import java.util.*;
+
 import me.cpanda.UHC.UHC;
+import me.cpanda.UHC.Utils;
 import me.cpanda.UHC.enums.GameState;
 import me.cpanda.UHC.timers.CountdownTimer;
 import me.cpanda.UHCWorldGen.UHCWorld;
@@ -10,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Team;
 
 /**
  * @author CacklingPanda
@@ -26,6 +30,7 @@ public class GameControl {
 	private UHCWorld uhcWorld;
 	private int timerID, timePassed, clockSpeed;;	
 	private boolean spectate;
+	private ArrayList<Player> dead;
 	
 	/**
 	 * Constructor 
@@ -50,15 +55,14 @@ public class GameControl {
 	/**
 	 * Stuff to run when the game starts
 	 * 
-	 * @return boolean true if game started, false otherwise TODO: move to another class?
+	 * @return boolean true if game started, false otherwise
 	 */
 	public boolean startGame() {
 		// If pre-game
 		if(gameState.equals(GameState.STARTING)) {			
+			// TODO: Write teams to config file
 			// Insert countdown
 			new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
-			
-			// TODO: Write teams to config
 			return true;
 		}
 		
@@ -81,9 +85,9 @@ public class GameControl {
 			// Cancel game timer
 			Bukkit.getScheduler().cancelTask(timerID);
 			
-			// Deny block placement/breakage while in creative TODO: Actually, maybe not? Config option?
-			plugin.getServer().broadcastMessage(ChatColor.DARK_GREEN + "GAME HAS " 
-					+ ChatColor.DARK_RED + "ENDED" + ChatColor.DARK_GREEN + "!");
+			// Deny block placement/breakage while in creative
+			plugin.getServer().broadcastMessage(ChatColor.AQUA + "GAME HAS " 
+					+ ChatColor.DARK_RED + "ENDED" + ChatColor.AQUA + "!");
 			
 			// Set gamestate to ending
 			gameState = GameState.ENDING;
@@ -108,6 +112,12 @@ public class GameControl {
 	 * @return boolean true if added to a team
 	 */
 	public boolean joinTeam(String teamPref, Player player) {
+		// If they want to join observers and the game isn't active
+		if(teamPref.equalsIgnoreCase("obs")) {
+			spectate(player);
+			return true;
+		}
+		
 		// Make sure it's actually possible to join a team first!
 		if(gameState.equals(GameState.ACTIVE)) {
 			player.sendMessage("The game is " + ChatColor.DARK_RED + "in progress" + ChatColor.RESET + "!");
@@ -241,5 +251,116 @@ public class GameControl {
 	 */
 	public int getClockSpeed() {
 		return clockSpeed;
+	}
+	
+	/**
+	 * Get the team the player is on
+	 * @param player
+	 * @return
+	 */
+	public Team getPlayerTeam(Player player) {
+		return teamControl.getPlayerTeam(player);
+	}
+	
+	/**
+	 * Add the player to the observer team
+	 * 
+	 * @param player
+	 */
+	public void spectate(Player player) {
+		teamControl.joinTeam("Observer", player);
+	}
+	
+	/**
+	 * Check to see if the player is on a team
+	 * 
+	 * @param player The player to check if they are on a team
+	 * @return boolean true if they are and false otherwise
+	 */
+	public boolean isOnTeam(Player player) {
+		return teamControl.onTeam(player);
+	}
+	
+	/**
+	 * Is the player dead? Check to see if they are or not
+	 * 
+	 * @param player The player to check if they are dead
+	 * @return boolean yes if dead
+	 */
+	public boolean isDead(Player player) {
+		Iterator<Player> deads = dead.iterator();
+		while(deads.hasNext()) {
+			Player p = deads.next();
+			if(p.getName().equalsIgnoreCase(player.getName()))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Send a message to all players
+	 * 
+	 * @param args The array of arguments
+	 * @return true
+	 */
+	public boolean talkGlobal(Player player, String[] args) {
+		
+		// Make message
+		String message = "<" + player.getDisplayName() + ChatColor.RESET + ">: ";
+		for(int i = 0; i < args.length; i++) {
+			message += args[i] + " ";
+		}
+		
+		// Send message to all online players
+		for(Player p : plugin.getServer().getOnlinePlayers()) {
+			p.sendMessage(message);
+		}
+		plugin.getServer().getLogger().info(message);
+		return true;
+	}
+	
+	/**
+	 * Get the team sizes
+	 * @return int the number of players per team
+	 */
+	public int getTeamSizes() {
+		return teamControl.getTeamSizes();
+	}
+	
+	/**
+	 * Get the teams
+	 * 
+	 * @return Get the teams
+	 */
+	public Set<Team> getTeams() {
+		return teamControl.getTeams();
+	}
+	
+	/**
+	 * Restart the game! In case something bad happens
+	 * 
+	 * @return boolean true if game is restarted, false otherwise
+	 */
+	public boolean restartGame() {
+		if(gameState.equals(GameState.STARTING))
+			return false;
+		
+		teamControl.cleanseTeams();
+		Utils.clearInventories(plugin);
+		Utils.healPlayers(plugin);
+		
+		for(Player p : plugin.getServer().getOnlinePlayers()) {
+			p.teleport(uhcWorld.getWorld().getSpawnLocation());
+		}
+		
+		uhcWorld.setPreUHCRules();
+		if(gameState.equals(GameState.ACTIVE))
+			Bukkit.getScheduler().cancelTask(timerID);
+		
+		gameState = GameState.STARTING;
+		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The game has been " + ChatColor.DARK_GREEN + "RESTARTED" + 
+				ChatColor.AQUA + "!");
+		
+		return true;
 	}
 }

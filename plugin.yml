@@ -9,6 +9,10 @@ database: false
 prefix: UHC
 
 commands:
+  fixbedrock:
+    description: Fix holes in the bedrock wall
+    permission: UHC.*
+    usage: /fixbedrock
   start:
     description: Start the UHC game!
     permission: UHC.*
@@ -37,10 +41,14 @@ commands:
     description: Print the current teams!
     permission: UHC.player
     usage: It's just /teams !
-  fixbedrock:
-    description: Fix holes in the bedrock wall
+  g:
+    description: Send a message to every player
+    permission: UHC.player
+    usage: /g <message>
+  restart:
+    description: Teleport everyone back to spawn add everyone to observers and start over
     permission: UHC.*
-    usage: /fixbedrock
+    usage: /restart
 
 permissions:
   UHC.*:

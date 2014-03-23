@@ -58,6 +58,10 @@ public class GameCommands implements CommandExecutor {
 			} else if(label.equalsIgnoreCase("fixbedrock")) {
 				plugin.getServer().broadcastMessage(ChatColor.DARK_RED + "Fixing bedrock... Prepare for lag!");
 				return UHC.getController().getUHCWorld().fixBedrock();
+			} else if(label.equalsIgnoreCase("g") && isPlayer && args.length > 0) {
+				return UHC.getController().talkGlobal(player, args);
+			} else if(label.equalsIgnoreCase("restart")) {
+				return UHC.getController().restartGame();
 			}
 		return false;
 	}
