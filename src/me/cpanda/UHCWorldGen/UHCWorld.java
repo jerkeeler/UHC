@@ -73,7 +73,7 @@ public class UHCWorld {
 		// GENERATE NETHER BEDROCK WALL
 		int netherSpawnZ = spawnZ/8;
 		int netherSpawnX = spawnX/8;
-		int netherRadius = (int) Math.ceil(radius/8);
+		int netherRadius = radius/8;
 		makeBedrock(netherRadius, netherSpawnX, netherSpawnZ, netherWorld);
 		
 		// GENERATE END BEDROCK WALLS
@@ -234,6 +234,160 @@ public class UHCWorld {
 	}
 	
 	/**
+	 * Generate the spawn platform
+	 * @param world
+	 * @param server
+	 */
+	public void generateSpawnPlatform(Server server) {		
+		regWorld.getBlockAt(0, 245, 0).setType(Material.GOLD_BLOCK);	
+		
+		int bottomY = 245;
+		//int topY = 250;
+		
+		int swZ = 9;
+		int swX = -9;
+		
+		int nwZ = -9;
+		int nwX = -9;
+		
+		int neZ = -9;
+		int neX = 9;
+		
+		int seZ = 10;
+		int seX = 10;
+		
+		// Make initial platform.
+		for(int x = swX; x < seX; x++ ) {
+			for(int z = nwZ; z < seZ; z++) {
+				if(regWorld.getBlockAt(x, bottomY, z).getType().equals(Material.AIR))
+					regWorld.getBlockAt(x, bottomY, z).setType(Material.QUARTZ_BLOCK);
+			}
+		}
+		
+		// Make glass layer 1
+		for(int x = nwX; x < neX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+1, nwZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+1, nwZ).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		for(int z = neZ; z < seZ; z++) {
+			if(regWorld.getBlockAt(neX, bottomY+1, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(neX, bottomY+1, z).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		for(int z = nwZ; z < swZ; z++) {
+			if(regWorld.getBlockAt(nwZ, bottomY+1, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(nwZ, bottomY+1, z).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		for(int x = swX; x < seX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+1, swZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+1, swZ).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		// Make iron bar layer
+		for(int x = nwX; x < neX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+2, nwZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+2, nwZ).setType(Material.IRON_FENCE);
+			}
+		}
+		
+		for(int z = neZ; z < seZ; z++) {
+			if(regWorld.getBlockAt(neX, bottomY+2, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(neX, bottomY+2, z).setType(Material.IRON_FENCE);
+			}
+		}
+		
+		for(int z = nwZ; z < swZ; z++) {
+			if(regWorld.getBlockAt(nwZ, bottomY+2, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(nwZ, bottomY+2, z).setType(Material.IRON_FENCE);
+			}
+		}
+		
+		for(int x = swX; x < seX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+2, swZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+2, swZ).setType(Material.IRON_FENCE);
+			}
+		}
+		
+		// Make glass layer 2
+		for(int x = nwX; x < neX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+3, nwZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+3, nwZ).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		for(int z = neZ; z < seZ; z++) {
+			if(regWorld.getBlockAt(neX, bottomY+3, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(neX, bottomY+3, z).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		for(int z = nwZ; z < swZ; z++) {
+			if(regWorld.getBlockAt(nwZ, bottomY+3, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(nwZ, bottomY+3, z).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		for(int x = swX; x < seX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+3, swZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+3, swZ).setType(Material.STAINED_GLASS);
+			}
+		}
+		
+		// make quarts ring
+		for(int x = nwX; x < neX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+4, nwZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+4, nwZ).setType(Material.QUARTZ_BLOCK);
+			}
+		}
+		
+		for(int z = neZ; z < seZ; z++) {
+			if(regWorld.getBlockAt(neX, bottomY+4, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(neX, bottomY+4, z).setType(Material.QUARTZ_BLOCK);
+			}
+		}
+		
+		for(int z = nwZ; z < swZ; z++) {
+			if(regWorld.getBlockAt(nwZ, bottomY+4, z).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(nwZ, bottomY+4, z).setType(Material.QUARTZ_BLOCK);
+			}
+		}
+		
+		for(int x = swX; x < seX; x++) {
+			if(regWorld.getBlockAt(x, bottomY+4, swZ).getType().equals(Material.AIR)) {
+				regWorld.getBlockAt(x, bottomY+4, swZ).setType(Material.QUARTZ_BLOCK);
+			}
+		}
+	}
+	
+	/**
+	 * Delete the spawn platform
+	 */
+	public void deleteSpawn() {
+		int bottomX = -9;
+		int bottomY = 245;
+		int bottomZ = -9;
+		
+		int topX = 10;
+		int topY = 250;
+		int topZ = 10;
+		
+		// Set everything to air!
+		for(int x = bottomX; x < topX; x++) {
+			for(int z = bottomZ; z < topZ; z++) {
+				for(int y = bottomY; y < topY; y++) {
+					regWorld.getBlockAt(x, y, z).setType(Material.AIR);
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Static method to load an already existing UHCWorld
 	 * 
 	 * @param worldName The name of the world.
@@ -255,9 +409,9 @@ public class UHCWorld {
 		regWorld.setSpawnLocation(0, 247, 0);
 		World netherWorld = generateNetherWorld(worldName, server);
 		World endWorld = generateEndWorld(worldName, server);
-		generateSpawnPlatform(regWorld, server);
 		
 		UHCWorld loadedWorld = new UHCWorld(radius, worldName, eternalDay, regWorld, netherWorld, endWorld);
+		loadedWorld.generateSpawnPlatform(server);
 		
 		// Do you want to pregenChunks?
 		if(pregenChunks) {
@@ -323,33 +477,4 @@ public class UHCWorld {
 		return endWorld;
 	}
 	
-	/**
-	 * Generate the spawn platform
-	 * @param world
-	 * @param server
-	 */
-	private static void generateSpawnPlatform(World world, Server server) {		
-		world.getBlockAt(0, 245, 0).setType(Material.GOLD_BLOCK);	
-		
-		int bottomY = 245;
-		int topY = 250;
-		
-		int swZ = 9;
-		int swX = -9;
-		
-		int nwZ = -9;
-		int nwX = -9;
-		
-		int neZ = -9;
-		int neX = 9;
-		
-		int seZ = 9;
-		int seX = 9;
-		
-		for(int x = swX + 2; x < neX -2; x++ ) {
-			for(int z = nwZ + 2; z < seZ -2; z++) {
-				world.getBlockAt(x, bottomY, z).setType(Material.QUARTZ_BLOCK);
-			}
-		}
-	}
 }

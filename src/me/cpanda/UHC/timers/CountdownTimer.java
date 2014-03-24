@@ -88,6 +88,7 @@ public class CountdownTimer {
 				
 				// Update observer visibility
 				UHC.getController().updateVis(false);
+				UHC.getController().getUHCWorld().deleteSpawn();
 				
 				// Clear inventories
 				Utils.clearInventories(plugin);
@@ -101,7 +102,7 @@ public class CountdownTimer {
 				// Stuff to start the game
 				// Set world stuff to correct values
 				UHC.getController().getUHCWorld().setUHCRules();
-				UHC.getController().getUHCWorld().getWorld().setSpawnLocation(0, 150, 0);
+				UHC.getController().getUHCWorld().getWorld().setSpawnLocation(0, 120, 0);
 				plugin.getServer().broadcastMessage(ChatColor.AQUA + "GAME IS STARTING " 
 						+ ChatColor.DARK_RED + "NOW" + ChatColor.AQUA + "!");
 				

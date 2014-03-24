@@ -131,13 +131,18 @@ public class GameControl {
 		Utils.clearInventories(plugin);
 		Utils.healPlayers(plugin);
 		
+		// Set world to preUHCRules and cancel gametimer
+		uhcWorld.setPreUHCRules();
+		uhcWorld.generateSpawnPlatform(plugin.getServer());
+		uhcWorld.getWorld().setSpawnLocation(0, 247, 0);
+		
 		// Teleport everyone to spawn
 		for(Player p : plugin.getServer().getOnlinePlayers()) {
 			p.teleport(uhcWorld.getWorld().getSpawnLocation());
+			p.setGameMode(GameMode.ADVENTURE);
 		}
 		
-		// Set world to preUHCRules and cancel gametimer
-		uhcWorld.setPreUHCRules();
+		// Reset game stuff
 		if(gameState.equals(GameState.ACTIVE))
 			Bukkit.getScheduler().cancelTask(timerID);	
 		timePassed = 0;

@@ -3,6 +3,7 @@ package me.cpanda.UHC.theGame;
 import java.util.*;
 
 import me.cpanda.UHC.UHC;
+import me.cpanda.UHC.enums.GameState;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -180,12 +181,15 @@ public class TeamController {
 	private boolean joinObservers(Player player) {
 		player.teleport(UHC.getController().getUHCWorld().getWorld().getSpawnLocation());
 		player.sendMessage("You are now an " + obsColor + "observer" + ChatColor.RESET + "!");
-		//if(UHC.getController().getGameState().equals(GameState.STARTING))
-			//player.setGameMode(GameMode.ADVENTURE);
-		//else
+		if(UHC.getController().getGameState().equals(GameState.STARTING))
+			player.setGameMode(GameMode.ADVENTURE);
+		else
 			player.setGameMode(GameMode.CREATIVE);
 		player.setDisplayName(obsColor + player.getName() + ChatColor.RESET);
 		mainScoreboard.getTeam(obsName).addPlayer(player);
+		
+		if(UHC.getController().getGameState().equals(GameState.ACTIVE)) 
+			UHC.getController().updateVis(false);
 		return true;
 	}
 	
@@ -295,11 +299,13 @@ public class TeamController {
 				+ (radius-1) + " " + respectTeams;
 		
 		// Add all players on teams to the command
-		for(Team team : mainScoreboard.getTeams()) {
-			if(team.getName().equals(obsName))
-				continue;
-			
+		for(Team team : mainScoreboard.getTeams()) {		
 			for(OfflinePlayer player : team.getPlayers()) {
+				if(team.getName().equals(obsName)) {
+					((Player) player).setGameMode(GameMode.CREATIVE);
+					continue;
+				}
+				
 				command += " " + player.getName();
 				if(player instanceof Player) 
 					((Player) player).setGameMode(GameMode.SURVIVAL);
