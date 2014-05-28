@@ -21,6 +21,7 @@ public class UHCWorld {
 	private int radius, eternalDay;
 	private String worldName;
 	private World regWorld, netherWorld, endWorld;
+	private boolean boundNether;
 	
 	/**
 	 * The default constructor for the UHCWorld
@@ -28,13 +29,15 @@ public class UHCWorld {
 	 * @param radius The playable radius for the world
 	 * @param regWorld The world file that is being played in
 	 */
-	public UHCWorld(int radius, String worldName, int eternalDay,  World regWorld, World netherWorld, World endWorld) {
+	public UHCWorld(int radius, String worldName, int eternalDay,  World regWorld, World netherWorld, World endWorld,
+			boolean boundNether) {
 		this.radius = radius;
 		this.worldName = worldName;
 		this.eternalDay = eternalDay;
 		this.regWorld = regWorld;
 		this.netherWorld = netherWorld;
 		this.endWorld = endWorld;
+		this.boundNether = boundNether;
 	}
 
 	/**
@@ -64,6 +67,8 @@ public class UHCWorld {
 	
 	/**
 	 * Generate the bedrock wall at the predefined radius
+	 * 
+	 * @param boundNether true if you want to bound the nether
 	 */
 	private void generateBedrock() {
 		int spawnZ = regWorld.getSpawnLocation().getBlockZ();
@@ -71,10 +76,12 @@ public class UHCWorld {
 		makeBedrock(radius, spawnX, spawnZ, regWorld);
 		
 		// GENERATE NETHER BEDROCK WALL
-		int netherSpawnZ = spawnZ/8;
-		int netherSpawnX = spawnX/8;
-		int netherRadius = radius/8;
-		makeBedrock(netherRadius, netherSpawnX, netherSpawnZ, netherWorld);
+		if(boundNether) {
+			int netherSpawnZ = spawnZ/8;
+			int netherSpawnX = spawnX/8;
+			int netherRadius = radius/8;
+			makeBedrock(netherRadius, netherSpawnX, netherSpawnZ, netherWorld);
+		}
 		
 		// GENERATE END BEDROCK WALLS
 		int endSpawnZ = endWorld.getSpawnLocation().getBlockZ();
@@ -395,7 +402,7 @@ public class UHCWorld {
 	 * @param server The server object to load the world
 	 * @return UHCWorld The loaded UCHWorld object
 	 */
-	public static UHCWorld loadWorld(int radius, boolean generateBedrock, boolean pregenChunks, int eternalDay, Server server) {
+	public static UHCWorld loadWorld(int radius, boolean generateBedrock, boolean pregenChunks, boolean boundNether, int eternalDay, Server server) {
 		List<World> listOfWorlds = server.getWorlds();
 		// Check to see if world is created or not
 		World regWorld = listOfWorlds.get(0);;
@@ -410,7 +417,7 @@ public class UHCWorld {
 		World netherWorld = generateNetherWorld(worldName, server);
 		World endWorld = generateEndWorld(worldName, server);
 		
-		UHCWorld loadedWorld = new UHCWorld(radius, worldName, eternalDay, regWorld, netherWorld, endWorld);
+		UHCWorld loadedWorld = new UHCWorld(radius, worldName, eternalDay, regWorld, netherWorld, endWorld, boundNether);
 		loadedWorld.generateSpawnPlatform(server);
 		
 		// Do you want to pregenChunks?

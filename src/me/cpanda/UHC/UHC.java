@@ -6,6 +6,7 @@ import me.cpanda.UHC.commands.GameCommands;
 import me.cpanda.UHC.commands.UtilCommands;
 import me.cpanda.UHC.enums.GameState;
 import me.cpanda.UHC.listeners.MessageListener;
+import me.cpanda.UHC.listeners.MobDeathListener;
 import me.cpanda.UHC.listeners.PlayerConnectionListener;
 import me.cpanda.UHC.listeners.PlayerDeathListener;
 import me.cpanda.UHC.theGame.GameControl;
@@ -92,10 +93,11 @@ public class UHC extends JavaPlugin {
 		int worldRadius = config.getInt("GeneralOptions.worldRadius");
 		int eternalDay = config.getInt("GeneralOptions.eternalDay");
 		boolean generateBedrock = config.getBoolean("GeneralOptions.generateBedrock");
+		boolean boundNether = config.getBoolean("GeneralOptions.boundNether");
 		boolean pregenChunks = config.getBoolean("GeneralOptions.pregenChunks");
 		
 		// The the world into a uhcWorld
-		UHCWorld uhcWorld = UHCWorld.loadWorld(worldRadius,generateBedrock, pregenChunks, eternalDay, server);
+		UHCWorld uhcWorld = UHCWorld.loadWorld(worldRadius,generateBedrock, pregenChunks, boundNether, eternalDay, server);
 		
 		// Initiate GameControl and TeamControl class
 		int numTeams = config.getInt("TeamOptions.numberOfTeams");
@@ -122,6 +124,7 @@ public class UHC extends JavaPlugin {
 		server.getPluginManager().registerEvents(new PlayerConnectionListener(this), this);
 		server.getPluginManager().registerEvents(new MessageListener(this), this);
 		server.getPluginManager().registerEvents(new PlayerDeathListener(this), this);
+		server.getPluginManager().registerEvents(new MobDeathListener(this), this);
 		
 		// Register all commands
 		UtilCommands utilCmdListener = new UtilCommands(this);
@@ -140,6 +143,8 @@ public class UHC extends JavaPlugin {
 		this.getCommand("cancel").setExecutor(gameCmdListener);
 		this.getCommand("randomize").setExecutor(gameCmdListener);
 		this.getCommand("teamf").setExecutor(gameCmdListener);
+		this.getCommand("clearteams").setExecutor(gameCmdListener);
+		this.getCommand("set").setExecutor(gameCmdListener);
 	}
 	
 	/**

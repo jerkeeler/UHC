@@ -58,7 +58,7 @@ public class PlayerDeathListener implements Listener {
 		// Kick player or add to spectators
 		if(UHC.getController().canSpectate()) {
 			UHC.getController().spectate(deadPlayer);
-		} else if (!deadPlayer.isOp()){
+		} else if (deadPlayer.isOp()){
 			UHC.getController().spectate(deadPlayer);
 		} else {
 			UHC.getController().leaveTeam(deadPlayer);
@@ -78,7 +78,7 @@ public class PlayerDeathListener implements Listener {
 						" has been " + ChatColor.DARK_RED + "eliminated" + ChatColor.AQUA + "!");
 			
 			// Check teams
-			if(UHC.getController().getTeamSizes() == 1) {
+			if(UHC.getController().getTeams().size() == 2) {
 				// Do stuff for single person teams
 			} else {
 				// Check to see if there is a winner

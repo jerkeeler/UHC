@@ -18,6 +18,7 @@ GeneralOptions:
   # Unless you already have a world file and toggle this to FALSE you will always
   # have a bedrock wall.
   generateBedrock: true
+  boundNether: false
   
   # Set to true if you want chunks to be pre-generated
   # WARNING: Reqiures a minimum amount of ram, about 2GB.

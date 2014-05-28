@@ -1,6 +1,7 @@
 package me.cpanda.UHC.commands;
 
 import me.cpanda.UHC.UHC;
+import me.cpanda.UHC.enums.GameState;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -107,6 +108,57 @@ public class GameCommands implements CommandExecutor {
 				boolean temp = UHC.getController().teamForce(args[0], args[1]);
 				if(!temp) sender.sendMessage(ChatColor.ITALIC + "That player does not exist or the team is full!");
 				else sender.sendMessage(ChatColor.ITALIC + "Congrats! They either joined the team or are now an observer! I'm too lazy to flesh this out at the moment!");
+				return true;
+			}
+			
+			// Clear teams
+			else if(label.equalsIgnoreCase("clearteams")) {
+				boolean temp = UHC.getController().clearTeams();
+				if(temp)
+					plugin.getServer().broadcastMessage(ChatColor.AQUA + "Teams have been " + ChatColor.DARK_RED +
+							"cleared" + ChatColor.AQUA + "!");
+				else 
+					sender.sendMessage(ChatColor.ITALIC + "The game is either in progress or over! Cannot clear!");
+				return true;
+			}
+			
+			// Set game parameters
+			else if(label.equalsIgnoreCase("set") && args.length >= 2) {
+				// Make sure it's before the game has started
+				if(!UHC.getController().getGameState().equals(GameState.STARTING)) {
+					sender.sendMessage(ChatColor.ITALIC + "You must set stuff BEFORE the game starts!");
+					return true;
+				}
+				
+				String parameter = args[0];
+				int number = 0;
+				
+				// Make sure they gave a valid number
+				try {
+					number = Integer.parseInt(args[1]);
+				} catch (NumberFormatException e) {
+					sender.sendMessage(ChatColor.ITALIC + "Please provide a valid integer!");
+					return true;
+				}
+				
+				
+				// Actually do stuff
+				if(parameter.equalsIgnoreCase("teamsize")) {
+					UHC.getController().setTeamSizes(number);
+					plugin.getServer().broadcastMessage(ChatColor.AQUA + "The team size has been set to " + 
+							ChatColor.DARK_RED + number + ChatColor.AQUA + "!");
+				} else if (parameter.equalsIgnoreCase("numteams")) {
+					if(number > 10) {
+						sender.sendMessage(ChatColor.ITALIC + "The max number of teams is 10");
+						number = 10;
+					}
+					
+					UHC.getController().setNumTeams(number);
+					plugin.getServer().broadcastMessage(ChatColor.AQUA + "The number of teams has been set to " + 
+							ChatColor.DARK_RED + number + ChatColor.AQUA + "!");
+				} else {
+					sender.sendMessage(ChatColor.ITALIC + "Please provide a valid parameter to set!");
+				}
 				return true;
 			}
 		return false;

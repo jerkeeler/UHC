@@ -61,7 +61,7 @@ public class CountdownTimer {
 			if(timeLeft == 10) {
 				// Teleport
 				UHC.getController().teleportTeams();
-				UHC.getController().freezeTeams(15);		
+				UHC.getController().freezeTeams(10);		
 			}
 			
 			if(first) {
@@ -110,7 +110,7 @@ public class CountdownTimer {
 						new GameplayTimer(plugin, UHC.getController().getClockSpeed()), 20*60, 20*60));
 
 				Bukkit.getScheduler().cancelTask(timerID);
-			}
+			}	
 			
 			timeLeft--;
 		}

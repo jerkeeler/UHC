@@ -45,6 +45,14 @@ commands:
     description: cancel the current countdown
     permission: UHC.*
     usage: /cancel 
+  clearteams:
+    description: clear everyone's teams
+    permission: UHC.*
+    usage: /clearteams
+  set:
+    description: set different parameters, such as team sizes and number of teams
+    permission: UHC.*
+    usage: /set <parameter (teamsize or numteams)> <integer>
   join:
     description: Join a UHC team! Can specify team.
     permission: UHC.player

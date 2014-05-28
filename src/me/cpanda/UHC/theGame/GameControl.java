@@ -69,9 +69,7 @@ public class GameControl {
 			// TODO: Write teams to config file
 			// Start the countdown
 			countdown = new CountdownTimer(30, plugin, "Match is starting in #{COUNTDOWN} seconds!");
-			plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
-			plugin.saveConfig();
-	
+			saveTheConfig();
 			return true;
 		}
 		
@@ -90,6 +88,7 @@ public class GameControl {
 		
 		// If the game is running
 		if(gameState.equals(GameState.ACTIVE)) {
+			
 			// Set gamemodes
 			for(Player player : plugin.getServer().getOnlinePlayers()) {
 				player.setGameMode(GameMode.CREATIVE);
@@ -104,8 +103,7 @@ public class GameControl {
 			
 			// Set gamestate to ending
 			gameState = GameState.ENDING;
-			plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
-			plugin.saveConfig();
+			saveTheConfig();
 			
 			return true;
 		}
@@ -127,7 +125,6 @@ public class GameControl {
 			countdown.cancelCountdown();
 		
 		// Clear teams
-		teamControl.cleanseTeams();
 		Utils.clearInventories(plugin);
 		Utils.healPlayers(plugin);
 		
@@ -147,8 +144,7 @@ public class GameControl {
 			Bukkit.getScheduler().cancelTask(timerID);	
 		timePassed = 0;
 		gameState = GameState.STARTING;
-		plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
-		plugin.saveConfig();
+		saveTheConfig();
 		
 		plugin.getServer().broadcastMessage(ChatColor.AQUA + "The game has been " + ChatColor.DARK_GREEN + "RESTARTED" + 
 				ChatColor.AQUA + "!");
@@ -165,8 +161,7 @@ public class GameControl {
 		if(countdown != null) {
 			// Cancel timer and reset gamestate
 			gameState = GameState.STARTING;
-			plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
-			plugin.saveConfig();
+			saveTheConfig();
 			countdown.cancelCountdown();
 			Utils.clearInventories(plugin);
 			Utils.healPlayers(plugin);
@@ -447,5 +442,64 @@ public class GameControl {
 	 */
 	public void clearCountdownTimer() {
 		countdown = null;
+	}
+	
+	/**
+	 * Clear teams
+	 * 
+	 * @return boolean true if teams are cleared
+	 */
+	public boolean clearTeams() {
+		if(gameState.equals(GameState.STARTING)) {
+			teamControl.cleanseTeams();
+			return true;
+		} 
+		
+		return false;
+	}
+	
+	/**
+	 * Set the team sizes
+	 * 
+	 * @param teamSize the number of players per team
+	 */
+	public void setTeamSizes(int teamSize) {
+		teamControl.setTeamSizes(teamSize);
+	}
+	
+	/**
+	 * Set the number of teams
+	 * 
+	 * @param numTeams the number of teams to play
+	 */
+	public void setNumTeams(int numTeams) {
+		teamControl.setNumTeams(numTeams);
+	}
+	
+	/**
+	 * Save the configuration based on the current variables
+	 */
+	public void saveTheConfig() {
+		plugin.getConfig().set("GeneralOptions.gameState", GameState.gameStateToInt(gameState));
+		plugin.getConfig().set("TeamOptions.numberOfTeams", teamControl.getNumTeams());
+		plugin.getConfig().set("TeamOptions.teamSizes", teamControl.getTeamSizes());
+		plugin.saveConfig();
+	}
+	
+	/**
+	 * Increment the mob kill count by one for the specified player
+	 * 
+	 * @param player the player who killed a mob
+	 */
+	public void incrementMobKillCount(Player player) {
+		teamControl.incrementMobKillCount(player);
+	}
+	
+	public void showMobKills() {
+		teamControl.showMobKills();
+	}
+	
+	public void showPlayerKills() {
+		teamControl.showPlayerKills();
 	}
 }

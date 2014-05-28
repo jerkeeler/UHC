@@ -73,9 +73,12 @@ public class TeamController {
 	 */
 	private void addObjectives() {
 		mainScoreboard.registerNewObjective("playerHealth", "health");
-		mainScoreboard.registerNewObjective("playerKills", "playerKills");
-		//mainScoreboard.registerNewObjective("mobKills", "mobKills");
+		mainScoreboard.registerNewObjective("playerKills", "playerKillCount");
+		mainScoreboard.registerNewObjective("mobKills", "dummy");
+		
 		mainScoreboard.getObjective("playerHealth").setDisplaySlot(DisplaySlot.PLAYER_LIST);
+		mainScoreboard.getObjective("playerKills").setDisplayName("Player Kills");
+		mainScoreboard.getObjective("mobKills").setDisplayName("Mob Kills");
 	}
 	
 	/**
@@ -87,7 +90,7 @@ public class TeamController {
 		mainScoreboard.getTeam(obsName).setPrefix("" + obsColor);
 		
 		// Only add one team if team sizes of 1
-		if(teamSizes == 1) {
+		if(totalNumTeams == 1) {
 			mainScoreboard.registerNewTeam(defaultName);
 		} 
 		
@@ -116,7 +119,7 @@ public class TeamController {
 	 * @return boolean True if joined a team
 	 */
 	public boolean joinRandomTeam(Player player) {
-		if(teamSizes == 1)
+		if(totalNumTeams == 1)
 			return joinTeam("Default", player);
 
 		String teamPref = obsName;
@@ -148,7 +151,11 @@ public class TeamController {
 		}
 		
 		// Add player to "Default" team if free-for-all
-		if(teamSizes == 1) {
+		if(totalNumTeams == 1) {
+			if(mainScoreboard.getTeam(defaultName).getPlayers().size() >= teamSizes) {
+				player.sendMessage(ChatColor.ITALIC + "The game is " + ChatColor.RED + "full");
+				return true;
+			}
 			mainScoreboard.getTeam(defaultName).addPlayer(player);
 			player.sendMessage("You have " + ChatColor.DARK_GREEN + "joined " + ChatColor.RESET + "the game!");
 			return true;
@@ -203,9 +210,9 @@ public class TeamController {
 		player.setDisplayName(player.getName());
 		
 		// Leave default team if free-for-all
-		if(teamSizes == 1) {
+		if(totalNumTeams == 1) {
 			mainScoreboard.getTeam(defaultName).removePlayer(player);
-			player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the game!");
+			//player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the game!");
 			joinTeam("Observer", player);
 			return true;
 		}
@@ -217,8 +224,8 @@ public class TeamController {
 					if(team.getName().equals(obsName))
 						break;
 					
-					player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the " + 
-							ChatColor.valueOf(team.getName()) + team.getName() + ChatColor.RESET + " team!");
+					//player.sendMessage("You have " + ChatColor.DARK_RED + "left " + ChatColor.RESET + "the " + 
+							//ChatColor.valueOf(team.getName()) + team.getName() + ChatColor.RESET + " team!");
 					team.removePlayer(player);
 					break;
 				}
@@ -265,9 +272,9 @@ public class TeamController {
 	 * @return boolean true
 	 */
 	public boolean printTeams(CommandSender sender) {
-		if(teamSizes == 1) {
+		if(totalNumTeams == 1) {
 			sender.sendMessage("Players: " + mainScoreboard.getTeam(defaultName).getSize() + ChatColor.BLACK + "/" + ChatColor.RESET
-					+ totalNumTeams);
+					+ teamSizes);
 			return true;
 		}
 		
@@ -290,7 +297,7 @@ public class TeamController {
 		int radius = UHC.getController().getUHCWorld().getRadius();
 		int minDistance = radius/5;
 		boolean respectTeams = true;
-		if(teamSizes == 1) {
+		if(totalNumTeams == 1) {
 			respectTeams = false;
 			minDistance = radius/10;
 		}
@@ -331,7 +338,7 @@ public class TeamController {
 		freezeEffects.add(new PotionEffect(PotionEffectType.BLINDNESS, 20*seconds, 100));
 		freezeEffects.add(new PotionEffect(PotionEffectType.SLOW, 20*seconds, 100));
 		freezeEffects.add(new PotionEffect(PotionEffectType.JUMP, 20*seconds, 126));
-		freezeEffects.add(new PotionEffect(PotionEffectType.WATER_BREATHING, 20*seconds, 100));
+		freezeEffects.add(new PotionEffect(PotionEffectType.WATER_BREATHING, 20*seconds + 10*20, 100));
 		freezeEffects.add(new PotionEffect(PotionEffectType.HEAL, 20*seconds, 100));
 		
 		for(Team team : mainScoreboard.getTeams()) {
@@ -396,7 +403,7 @@ public class TeamController {
 	/**
 	 * Updates the visibility of all observers and players
 	 * Should be called when the game starts, when the game ends, and when an
-	 * observer joines during the game.
+	 * observer joins during the game.
 	 */
 	public void updateVisibility(boolean viewAll) {	
 		for(Player p1 : plugin.getServer().getOnlinePlayers()) {
@@ -411,5 +418,88 @@ public class TeamController {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Reset the scoreboard and recreate teams
+	 */
+	private void resetScoreboard() {
+		// Remove all players and teams
+		for(Team team : mainScoreboard.getTeams()) {
+			for(OfflinePlayer player : team.getPlayers()) {
+				team.removePlayer(player);
+			}
+			
+			team.unregister();
+		}
+		
+		// recreate teams and add players to observers
+		createTeams();
+		for(Player player : plugin.getServer().getOnlinePlayers()) {
+			joinObservers(player);
+		}
+		
+		// Save the new team stuff
+		UHC.getController().saveTheConfig();
+	}
+	
+	/**
+	 * Set the number of players per team
+	 * 
+	 * @param teamSizes the number of players per team
+	 */
+	public void setTeamSizes(int teamSizes) {
+		this.teamSizes = teamSizes;
+		resetScoreboard();
+	}
+	
+	/**
+	 * Set the number of teams
+	 * 
+	 * @param numTeams the number of teams to play
+	 */
+	public void setNumTeams(int numTeams) {
+		this.totalNumTeams = numTeams;
+		resetScoreboard();
+	}
+	
+	/**
+	 * Get the number of teams
+	 * 
+	 * @return int the number of teams
+	 */
+	public int getNumTeams() {
+		return totalNumTeams;
+	}
+	
+	/**
+	 * Increment the mob kill count by 1
+	 * 
+	 * @param player the player's who's score you want to increment
+	 */
+	public void incrementMobKillCount(Player player) {
+		Score score = mainScoreboard.getObjective("mobKills").getScore((OfflinePlayer) player);
+		score.setScore(score.getScore() + 1);
+	}
+	
+	/**
+	 * Set all objective scores to 0!
+	 */
+	public void clearObjectives() {
+		for(Objective obj : mainScoreboard.getObjectives()) {
+			if(!obj.getName().equalsIgnoreCase("playerHealth")) {
+			
+			}
+		}
+	}
+	
+	public void showMobKills() {
+		mainScoreboard.getObjective(DisplaySlot.SIDEBAR).setDisplaySlot(null);
+		mainScoreboard.getObjective("mobKills").setDisplaySlot(DisplaySlot.SIDEBAR);
+	}
+	
+	public void showPlayerKills() {
+		mainScoreboard.getObjective(DisplaySlot.SIDEBAR).setDisplaySlot(null);
+		mainScoreboard.getObjective("playerKills").setDisplaySlot(DisplaySlot.SIDEBAR);
 	}
 }
